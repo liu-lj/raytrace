@@ -18,13 +18,13 @@ struct Image {
       : height(height), width(width), channels(channels) {
     data.resize(height * width * channels);
   }
-  inline byte& operator()(int w, int h, int c) {
+  inline byte& operator()(int h, int w, int c) {
     return data[(h * width + w) * channels + c];
   }
-  inline void setPixel(int w, int h, ColorI3 color) {
-    this->Image::operator()(w, h, 0) = color.x();
-    this->Image::operator()(w, h, 1) = color.y();
-    this->Image::operator()(w, h, 2) = color.z();
+  inline void setPixel(int h, int w, ColorI3 color) {
+    this->Image::operator()(h, w, 0) = color.x();
+    this->Image::operator()(h, w, 1) = color.y();
+    this->Image::operator()(h, w, 2) = color.z();
   }
   inline void writePNG(const char* path) {
     stbi_write_png(path, width, height, channels, data.data(),

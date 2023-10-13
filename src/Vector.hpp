@@ -7,6 +7,7 @@
 #include <string>
 
 namespace MathUtils {
+// 限制向量的维度至少为 2
 template <int n>
 concept IsVectorDim = n > 1;
 
@@ -47,7 +48,7 @@ struct VectorBase {
         {static_cast<T>(arg0), static_cast<T>(arg1), static_cast<T>(args)...});
   }
 
-  void readVals(std::initializer_list<T> vals) {
+  inline void readVals(std::initializer_list<T> vals) {
     int i = 0;
     for (auto v : vals) val[i++] = v;
   }
@@ -69,19 +70,21 @@ struct VectorBase {
 #pragma endregion
 
 #pragma region I/O functions
-  std::string toString() const {
+  inline std::string toString() const {
     std::stringstream ss;
     for (int i = 0; i < n - 1; i++) ss << val[i] << " ";
     ss << val[n - 1];
     return ss.str();
   }
 
-  friend std::istream& operator>>(std::istream& is, VectorBase<T, n>& v) {
+  inline friend std::istream& operator>>(std::istream& is,
+                                         VectorBase<T, n>& v) {
     for (int i = 0; i < n; i++) is >> v.val[i];
     return is;
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const VectorBase<T, n>& v) {
+  inline friend std::ostream& operator<<(std::ostream& os,
+                                         const VectorBase<T, n>& v) {
     for (int i = 0; i < n - 1; i++) os << v.val[i] << " ";
     os << v.val[n - 1];
     return os;
@@ -89,94 +92,94 @@ struct VectorBase {
 #pragma endregion
 
 #pragma region Math functions
-  VectorBase<T, n> operator+(const VectorBase<T, n>& v) const {
+  inline VectorBase<T, n> operator+(const VectorBase<T, n>& v) const {
     VectorBase<T, n> res;
     for (int i = 0; i < n; i++) res.val[i] = val[i] + v.val[i];
     return res;
   }
 
-  VectorBase<T, n> operator-(const VectorBase<T, n>& v) const {
+  inline VectorBase<T, n> operator-(const VectorBase<T, n>& v) const {
     VectorBase<T, n> res;
     for (int i = 0; i < n; i++) res.val[i] = val[i] - v.val[i];
     return res;
   }
 
-  T operator*(const VectorBase<T, n>& v) const { return dot(v); }
+  inline T operator*(const VectorBase<T, n>& v) const { return dot(v); }
 
-  VectorBase<T, n>& operator+=(const VectorBase<T, n>& v) {
+  inline VectorBase<T, n>& operator+=(const VectorBase<T, n>& v) {
     for (int i = 0; i < n; i++) val[i] += v.val[i];
     return *this;
   }
 
-  VectorBase<T, n>& operator-=(const VectorBase<T, n>& v) {
+  inline VectorBase<T, n>& operator-=(const VectorBase<T, n>& v) {
     for (int i = 0; i < n; i++) val[i] -= v.val[i];
     return *this;
   }
 
-  VectorBase<T, n>& operator*=(const VectorBase<T, n>& v) {
+  inline VectorBase<T, n>& operator*=(const VectorBase<T, n>& v) {
     for (int i = 0; i < n; i++) val[i] *= v.val[i];
     return *this;
   }
 
-  VectorBase<T, n> operator+(T x) const {
+  inline VectorBase<T, n> operator+(T x) const {
     VectorBase<T, n> res;
     for (int i = 0; i < n; i++) res.val[i] = val[i] + x;
     return res;
   }
 
-  VectorBase<T, n> operator-(T x) const {
+  inline VectorBase<T, n> operator-(T x) const {
     VectorBase<T, n> res;
     for (int i = 0; i < n; i++) res.val[i] = val[i] - x;
     return res;
   }
 
-  VectorBase<T, n> operator*(T x) const {
+  inline VectorBase<T, n> operator*(T x) const {
     VectorBase<T, n> res;
     for (int i = 0; i < n; i++) res.val[i] = val[i] * x;
     return res;
   }
 
-  VectorBase<T, n> operator/(T x) const {
+  inline VectorBase<T, n> operator/(T x) const {
     VectorBase<T, n> res;
     for (int i = 0; i < n; i++) res.val[i] = val[i] / x;
     return res;
   }
 
-  VectorBase<T, n>& operator+=(T x) {
+  inline VectorBase<T, n>& operator+=(T x) {
     for (int i = 0; i < n; i++) val[i] += x;
     return *this;
   }
 
-  VectorBase<T, n>& operator-=(T x) {
+  inline VectorBase<T, n>& operator-=(T x) {
     for (int i = 0; i < n; i++) val[i] -= x;
     return *this;
   }
 
-  VectorBase<T, n>& operator*=(T x) {
+  inline VectorBase<T, n>& operator*=(T x) {
     for (int i = 0; i < n; i++) val[i] *= x;
     return *this;
   }
 
-  VectorBase<T, n>& operator/=(T x) {
+  inline VectorBase<T, n>& operator/=(T x) {
     for (int i = 0; i < n; i++) val[i] /= x;
     return *this;
   }
 
-  T dot(const VectorBase<T, n>& v) const {
+  inline T dot(const VectorBase<T, n>& v) const {
     T sum = 0;
     for (int i = 0; i < n; i++) sum += val[i] * v.val[i];
     return sum;
   }
 
-  T length() const { return dot(*this); }
+  inline T length() const { return dot(*this); }
 
-  VectorBase<T, n>& normalized() {
+  inline VectorBase<T, n>& normalized() {
     T invLen = 1 / length();
     for (int i = 0; i < n; i++) val[i] *= invLen;
     return *this;
   }
 
-  VectorBase<T, n>& safeNormalized() {
+  inline VectorBase<T, n>& safeNormalized() {
     T invLen = 1 / max(length(), 1e-3);
     for (int i = 0; i < n; i++) val[i] *= invLen;
     return *this;

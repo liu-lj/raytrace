@@ -37,7 +37,8 @@ struct VectorBase {
   VectorBase(T0 arg0, T1 arg1, Ts... args) {
     static_assert(sizeof...(args) == n - 2,
                   "Number of arguments does not match type!");
-    readVals({arg0, arg1, args...});
+    readVals(
+        {static_cast<T>(arg0), static_cast<T>(arg1), static_cast<T>(args)...});
   }
 
   void readVals(std::initializer_list<T> vals) {
@@ -51,11 +52,10 @@ struct VectorBase {
   }
 
   template <typename... Ts>
-  auto operator()(Ts... args) -> VectorBase<T, sizeof...(args)> {
-    static_assert(sizeof...(args) == n,
-                  "Number of arguments does not match type!");
-    VectorBase<T, sizeof...(args)> res;
-    std::initializer_list<int> indexs{args...};
+  auto operator()(Ts... args) -> VectorBase<T, sizeof...(args)> const {
+    constexpr int len = sizeof...(args);
+    VectorBase<T, len> res;
+    std::initializer_list<size_t> indexs{static_cast<size_t>(args)...};
     int i = 0;
     for (auto index : indexs) res.val[i++] = val[index];
     return res;
@@ -65,7 +65,7 @@ struct VectorBase {
 #pragma region I/O functions
   std::string toString() const {
     std::stringstream ss;
-    for (int i = 0; i < n - 1; i++) ss << val[i] << ", ";
+    for (int i = 0; i < n - 1; i++) ss << val[i] << " ";
     ss << val[n - 1];
     return ss.str();
   }
@@ -178,6 +178,7 @@ struct VectorBase {
 #pragma endregion
 };
 
+#pragma region Derived types
 template <typename T, int n>
 struct Vector : public VectorBase<T, n> {
   using VectorBase<T, n>::VectorBase;
@@ -186,36 +187,36 @@ struct Vector : public VectorBase<T, n> {
 template <typename T>
 struct Vector<T, 2> : VectorBase<T, 2> {
   using VectorBase<T, 2>::VectorBase;
-  T& x() { return this->val[0]; }
-  T& y() { return this->val[1]; }
+  inline T& x() { return this->val[0]; }
+  inline T& y() { return this->val[1]; }
 };
 
 template <typename T>
 struct Vector<T, 3> : public VectorBase<T, 3> {
   using VectorBase<T, 3>::VectorBase;
-  T& x() { return this->val[0]; }
-  T& y() { return this->val[1]; }
-  T& z() { return this->val[2]; }
-  T& r() { return this->val[0]; }
-  T& g() { return this->val[1]; }
-  T& b() { return this->val[2]; }
+  inline T& x() { return this->val[0]; }
+  inline T& y() { return this->val[1]; }
+  inline T& z() { return this->val[2]; }
+  inline T& r() { return this->val[0]; }
+  inline T& g() { return this->val[1]; }
+  inline T& b() { return this->val[2]; }
 };
 
 template <typename T>
 struct Vector<T, 4> : public VectorBase<T, 4> {
   using VectorBase<T, 4>::VectorBase;
-  Vector(VectorBase<T, 4>& v) : Vector(std::move(v)) {}
-  Vector(VectorBase<T, 4>&& v) : VectorBase<T, 4>(v) {}
-  T& x() { return this->val[0]; }
-  T& y() { return this->val[1]; }
-  T& z() { return this->val[2]; }
-  T& w() { return this->val[3]; }
-  T& r() { return this->val[0]; }
-  T& g() { return this->val[1]; }
-  T& b() { return this->val[2]; }
-  T& a() { return this->val[3]; }
+  inline T& x() { return this->val[0]; }
+  inline T& y() { return this->val[1]; }
+  inline T& z() { return this->val[2]; }
+  inline T& w() { return this->val[3]; }
+  inline T& r() { return this->val[0]; }
+  inline T& g() { return this->val[1]; }
+  inline T& b() { return this->val[2]; }
+  inline T& a() { return this->val[3]; }
 };
+#pragma endregion
 
+#pragma region Type aliases
 using int2 = Vector<int, 2>;
 using float2 = Vector<float, 2>;
 using double2 = Vector<double, 2>;
@@ -226,9 +227,11 @@ using double3 = Vector<double, 3>;
 
 using int4 = Vector<int, 4>;
 using float4 = Vector<float, 4>;
+#pragma endregion
 
+#pragma region Non-member functions
 template <typename T, int n>
-VectorBase<T, n>& normalize(const VectorBase<T, n>& v) {
+inline VectorBase<T, n>& normalize(const VectorBase<T, n>& v) {
   T invLen = 1 / v.length();
   VectorBase<T, n> res;
   for (int i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
@@ -236,12 +239,13 @@ VectorBase<T, n>& normalize(const VectorBase<T, n>& v) {
 }
 
 template <typename T, int n>
-VectorBase<T, n>& safeNormalize(const VectorBase<T, n>& v) {
+inline VectorBase<T, n>& safeNormalize(const VectorBase<T, n>& v) {
   T invLen = 1 / (v.length() + 1e-5);
   VectorBase<T, n> res;
   for (int i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
   return res;
 }
+#pragma endregion
 }  // namespace MathUtils
 
 using MathUtils::normalize;

@@ -22,32 +22,23 @@ const float widthF = width, heightF = height;
 const float4 origin(0, 0, 0, 1);
 
 int main() {
-  int4 a(1, 2, 3, 4), b(2, 3, 4, 5);
-  auto apb = a + b;
-  print("a", a, "\nb", b, "\napb", apb);
-  // int4 force = (int4)apb;
-  int4 force = apb;
-  // std::move(apb);
-  print("force", force);
-  cin >> a[0];
-  // Image img(height, width, 3);
-  // Sphere sphere(float4(0, 0, -1, 1), 1, ColorI4(255, 0, 0));
-  // float aspectRatio = widthF / heightF;
-  // float viewportHeight = 2;
-  // float viewportWidth = aspectRatio * widthF / heightF;
-  // for (int i = 0; i < width; i++)
-  //   for (int j = 0; j < height; j++) {
-  //     float u = (i + 0.5f) / widthF, v = (j + 0.5f) / heightF;
-  //     float4 dir = float4(viewportWidth * (u - 0.5f),
-  //                         viewportHeight * (v - 0.5f), -1, 0);
-  //     Ray r(origin, dir);
-  //     // ColorI3 c = rayTrace(r);
-  //     ColorI3 c = ColorI3(25, 255 * (u + v) / 4, 255 * (u + v) / 2);
-  //     if (sphere.intersect(r))
-  //       c = sphere.color;
-  //     img.setPixel(i, j, c);
-  //   }
-  // img.writePNG("test.png");
-  // system("pause");
+  Image img(height, width, 3);
+  Sphere sphere(float4(0, 0, -1, 1), 1, ColorI4(255, 0, 0));
+  float aspectRatio = widthF / heightF;
+  float viewportHeight = 2;
+  float viewportWidth = aspectRatio * widthF / heightF;
+  for (int i = 0; i < width; i++)
+    for (int j = 0; j < height; j++) {
+      float u = (i + 0.5f) / widthF, v = (j + 0.5f) / heightF;
+      float4 dir = float4(viewportWidth * (u - 0.5f),
+                          viewportHeight * (v - 0.5f), -1, 0);
+      Ray r(origin, dir);
+      // ColorI3 c = rayTrace(r);
+      ColorI3 c = ColorI3(25, 255 * (u + v) / 4, 255 * (u + v) / 2);
+      if (sphere.intersect(r))
+        c = sphere.color;
+      img.setPixel(i, j, c);
+    }
+  img.writePNG("test.png");
   return 0;
 }

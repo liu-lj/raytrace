@@ -1,4 +1,5 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+// #define _CRT_SECURE_NO_WARNINGS
+#pragma warning (disable:4819)
 
 #include <cstdlib>
 #include <iostream>
@@ -26,7 +27,7 @@ int main() {
   print("a", a, "\nb", b, "\napb", apb);
   // int4 force = (int4)apb;
   int4 force = apb;
-  std::move(apb);
+  // std::move(apb);
   print("force", force);
   cin >> a[0];
   // Image img(height, width, 3);

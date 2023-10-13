@@ -1,10 +1,10 @@
 #pragma once
 
+#include <array>
 #include <cmath>
 #include <cstring>
-#include <string>
 #include <exception>
-#include <array>
+#include <string>
 
 namespace MathUtils {
 template <int n>
@@ -16,16 +16,23 @@ struct VectorBase {
   std::array<T, n> val;
 
 #pragma region Constructors and basic operators
+  // 空构造函数
   VectorBase() {}
 
+  // 复制构造函数
   VectorBase(const VectorBase<T, n>& v) { val = v.val; }
 
+  // 移动构造函数
+  VectorBase(VectorBase<T, n>&& v) : val(std::move(v.val)) {}
+
+  // 维度不相同的向量的复制构造函数
   template <typename T2, int n2>
   VectorBase(const VectorBase<T2, n2>& v) {
     int len = std::min(n, n2);
     for (int i = 0; i < len; i++) val[i] = static_cast<T>(v.val[i]);
   }
 
+  // 构造函数，参数为向量的值
   template <typename T0, typename T1, typename... Ts>
   VectorBase(T0 arg0, T1 arg1, Ts... args) {
     static_assert(sizeof...(args) == n - 2,
@@ -197,8 +204,8 @@ struct Vector<T, 3> : public VectorBase<T, 3> {
 template <typename T>
 struct Vector<T, 4> : public VectorBase<T, 4> {
   using VectorBase<T, 4>::VectorBase;
-  Vector(VectorBase<T, 4>& v) : Vector(std::move(v)) { }
-  Vector(VectorBase<T, 4>&& v) : VectorBase<T, 4>(v) { }
+  Vector(VectorBase<T, 4>& v) : Vector(std::move(v)) {}
+  Vector(VectorBase<T, 4>&& v) : VectorBase<T, 4>(v) {}
   T& x() { return this->val[0]; }
   T& y() { return this->val[1]; }
   T& z() { return this->val[2]; }

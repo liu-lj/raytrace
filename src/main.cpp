@@ -23,7 +23,7 @@ const float4 origin(0, 0, 0, 1);
 
 int main() {
   Image img(height, width, 3);
-  Sphere sphere(float4(0, 0, -1, 1), 1, ColorI4(255, 0, 0));
+  Sphere sphere(float4(0, 0, -1, 1), 1, ColorI4(255, 0, 0, 0));
   float aspectRatio = widthF / heightF;
   float viewportHeight = 2;
   float viewportWidth = aspectRatio * widthF / heightF;

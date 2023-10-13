@@ -25,6 +25,12 @@ struct VectorBase {
   // 移动构造函数
   VectorBase(VectorBase<T, n>&& v) : val(std::move(v.val)) {}
 
+  // 显式使用默认的复制赋值运算符
+  VectorBase<T, n>& operator=(const VectorBase<T, n>& v) = default;
+
+  // 显式使用默认的移动赋值运算符
+  VectorBase<T, n>& operator=(VectorBase<T, n>&& v) = default;
+
   // 维度不相同的向量的复制构造函数
   template <typename T2, int n2>
   VectorBase(const VectorBase<T2, n2>& v) {
@@ -52,7 +58,7 @@ struct VectorBase {
   }
 
   template <typename... Ts>
-  auto operator()(Ts... args) -> VectorBase<T, sizeof...(args)> const {
+  auto operator()(Ts... args) const -> VectorBase<T, sizeof...(args)> {
     constexpr int len = sizeof...(args);
     VectorBase<T, len> res;
     std::initializer_list<size_t> indexs{static_cast<size_t>(args)...};
@@ -182,11 +188,15 @@ struct VectorBase {
 template <typename T, int n>
 struct Vector : public VectorBase<T, n> {
   using VectorBase<T, n>::VectorBase;
+  Vector(const VectorBase<T, n>& other) : VectorBase<T, n>(other) {}
+  Vector(VectorBase<T, n>&& other) : VectorBase<T, n>(std::move(other)) {}
 };
 
 template <typename T>
 struct Vector<T, 2> : VectorBase<T, 2> {
   using VectorBase<T, 2>::VectorBase;
+  Vector(const VectorBase<T, 2>& other) : VectorBase<T, 2>(other) {}
+  Vector(VectorBase<T, 2>&& other) : VectorBase<T, 2>(std::move(other)) {}
   inline T& x() { return this->val[0]; }
   inline T& y() { return this->val[1]; }
 };
@@ -194,6 +204,8 @@ struct Vector<T, 2> : VectorBase<T, 2> {
 template <typename T>
 struct Vector<T, 3> : public VectorBase<T, 3> {
   using VectorBase<T, 3>::VectorBase;
+  Vector(const VectorBase<T, 3>& other) : VectorBase<T, 3>(other) {}
+  Vector(VectorBase<T, 3>&& other) : VectorBase<T, 3>(std::move(other)) {}
   inline T& x() { return this->val[0]; }
   inline T& y() { return this->val[1]; }
   inline T& z() { return this->val[2]; }
@@ -205,6 +217,8 @@ struct Vector<T, 3> : public VectorBase<T, 3> {
 template <typename T>
 struct Vector<T, 4> : public VectorBase<T, 4> {
   using VectorBase<T, 4>::VectorBase;
+  Vector(const VectorBase<T, 4>& other) : VectorBase<T, 4>(other) {}
+  Vector(VectorBase<T, 4>&& other) : VectorBase<T, 4>(std::move(other)) {}
   inline T& x() { return this->val[0]; }
   inline T& y() { return this->val[1]; }
   inline T& z() { return this->val[2]; }

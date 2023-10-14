@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
   std::ios::sync_with_stdio(false);
 
   Image image(height, width, 3);
-  Sphere sphere(float4(aspectRatio, 0, -1, 1), 0.3, ColorI4(255, 0, 0, 0));
+  Sphere sphere{0.3, float4(aspectRatio, 0, -1, 1), ColorI4(255, 0, 0, 0)};
 
   int lines_rendered = 0;
   omp_lock_t lines_rendered_mutex;
@@ -47,10 +47,11 @@ int main(int argc, char** argv) {
       // dir coordinates: x: left, y: up, -z: depth
       float4 dir = float4(worldPos.y(), -worldPos.x(), -1, 0);
       // emit a ray from the origin
-      Ray ray(origin, dir);
+      Ray ray{origin, dir};
       // background color (sky color)
       ColorI3 c(255 * x / height, 255 * x / height, 255);
-      float blend = 0.5 * (static_cast<float3>(dir(0, 1, 2).safeNormalized()).y() + 1.0);
+      float blend =
+          0.5 * (static_cast<float3>(dir(0, 1, 2).safeNormalized()).y() + 1.0);
       c = lerp(ColorI3(255, 255, 255), ColorI3(0, 0, 255), blend);
       // ray trace
       if (sphere.intersect(ray)) c = sphere.color;

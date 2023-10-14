@@ -8,9 +8,7 @@ struct Sphere {
   float radius;
   float4 center;
   ColorI4 color;
-  Sphere() {}
-  Sphere(float4 center, float radius, ColorI4 color)
-      : center(center), radius(radius), color(color) {}
+  
   inline bool intersect(const Ray& ray, float& t0, float& t1) const {
     float3 orig = ray.origin;
     float3 dir = ray.direction;
@@ -26,6 +24,7 @@ struct Sphere {
     }
     return false;
   }
+
   inline bool intersect(const Ray& ray) const {
     float3 orig = ray.origin;
     float3 dir = ray.direction;

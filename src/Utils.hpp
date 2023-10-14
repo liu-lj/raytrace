@@ -20,7 +20,8 @@ std::string get_dir(std::string path) {
   return path.substr(0, pos);
 }
 
-template <typename T>
-decltype(auto) lerp(T a, T b, float t) {
+template <typename T, typename T2>
+  requires std::is_arithmetic_v<T2>
+decltype(auto) lerp(T a, T b, T2 t) {
   return a * (1 - t) + b * t;
 }

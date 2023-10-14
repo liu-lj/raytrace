@@ -8,6 +8,8 @@
 #include <exception>
 #include <string>
 
+#include "Utils.hpp"
+
 namespace MathUtils {
 // 限制向量的维度至少为 2
 template <std::size_t n>
@@ -94,7 +96,9 @@ struct VectorBase {
 #pragma endregion
 
 #pragma region Math functions
-  inline VectorBase<T, n> operator+(T x) const {
+  template <typename T2>
+    requires std::is_arithmetic_v<T2>
+  inline VectorBase<T, n> operator+(T2 x) const {
     VectorBase<T, n> res;
     for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] + x;
     return res;
@@ -108,7 +112,9 @@ struct VectorBase {
     return res;
   }
 
-  inline VectorBase<T, n> operator-(T x) const {
+  template <typename T2>
+    requires std::is_arithmetic_v<T2>
+  inline VectorBase<T, n> operator-(T2 x) const {
     VectorBase<T, n> res;
     for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] - x;
     return res;
@@ -123,7 +129,9 @@ struct VectorBase {
   }
 
   // multipy by a scalar
-  inline VectorBase<T, n> operator*(T x) const {
+  template <typename T2>
+    requires std::is_arithmetic_v<T2>
+  inline VectorBase<T, n> operator*(T2 x) const {
     VectorBase<T, n> res;
     for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] * x;
     return res;
@@ -138,13 +146,17 @@ struct VectorBase {
     return res;
   }
 
-  inline VectorBase<T, n> operator/(T x) const {
+  template <typename T2>
+    requires std::is_arithmetic_v<T2>
+  inline VectorBase<T, n> operator/(T2 x) const {
     VectorBase<T, n> res;
     for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] / x;
     return res;
   }
 
-  inline VectorBase<T, n>& operator+=(T x) {
+  template <typename T2>
+    requires std::is_arithmetic_v<T2>
+  inline VectorBase<T, n>& operator+=(T2 x) {
     for (std::size_t i = 0; i < n; i++) val[i] += x;
     return *this;
   }
@@ -154,7 +166,9 @@ struct VectorBase {
     return *this;
   }
 
-  inline VectorBase<T, n>& operator-=(T x) {
+  template <typename T2>
+    requires std::is_arithmetic_v<T2>
+  inline VectorBase<T, n>& operator-=(T2 x) {
     for (std::size_t i = 0; i < n; i++) val[i] -= x;
     return *this;
   }
@@ -164,7 +178,9 @@ struct VectorBase {
     return *this;
   }
 
-  inline VectorBase<T, n>& operator*=(T x) {
+  template <typename T2>
+    requires std::is_arithmetic_v<T2>
+  inline VectorBase<T, n>& operator*=(T2 x) {
     for (std::size_t i = 0; i < n; i++) val[i] *= x;
     return *this;
   }
@@ -174,27 +190,29 @@ struct VectorBase {
     return *this;
   }
 
-  inline VectorBase<T, n>& operator/=(T x) {
+  template <typename T2>
+    requires std::is_arithmetic_v<T2>
+  inline VectorBase<T, n>& operator/=(T2 x) {
     for (std::size_t i = 0; i < n; i++) val[i] /= x;
     return *this;
   }
 
-  inline T dot(const VectorBase<T, n>& v) const {
-    T sum = 0;
+  inline float dot(const VectorBase<T, n>& v) const {
+    float sum = 0;
     for (std::size_t i = 0; i < n; i++) sum += val[i] * v.val[i];
     return sum;
   }
 
-  inline T length() const { return dot(*this); }
+  inline float length() const { return dot(*this); }
 
   inline VectorBase<T, n>& normalized() {
-    T invLen = 1 / length();
+    float invLen = 1 / length();
     for (std::size_t i = 0; i < n; i++) val[i] *= invLen;
     return *this;
   }
 
   inline VectorBase<T, n>& safeNormalized() {
-    T invLen = 1 / max(length(), 1e-3);
+    float invLen = 1 / std::max(length(), static_cast<float>(1e-3));
     for (std::size_t i = 0; i < n; i++) val[i] *= invLen;
     return *this;
   }
@@ -263,7 +281,7 @@ using float4 = Vector<float, 4>;
 #pragma region Non-member functions
 template <typename T, std::size_t n>
 inline VectorBase<T, n>& normalize(const VectorBase<T, n>& v) {
-  T invLen = 1 / v.length();
+  float invLen = 1 / v.length();
   VectorBase<T, n> res;
   for (std::size_t i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
   return res;
@@ -271,7 +289,7 @@ inline VectorBase<T, n>& normalize(const VectorBase<T, n>& v) {
 
 template <typename T, std::size_t n>
 inline VectorBase<T, n>& safeNormalize(const VectorBase<T, n>& v) {
-  T invLen = 1 / (v.length() + 1e-5);
+  float invLen = 1 / std::max(v.length(), static_cast<float>(1e-3));
   VectorBase<T, n> res;
   for (std::size_t i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
   return res;

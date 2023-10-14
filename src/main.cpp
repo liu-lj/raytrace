@@ -15,21 +15,21 @@ using std::cin;
 using std::cout;
 using std::endl;
 
-const int width = 800, height = 400;
+const int width = 600, height = 400;
 const float widthF = width, heightF = height;
+const float aspectRatio = widthF / heightF;
+// (x, y) in viewport: x: [-1, 1], y: [-aspectRatio, aspectRatio]
+const float viewportHeight = 2;
+const float viewportWidth = viewportHeight * widthF / heightF;
+const float2 viewportSize(viewportHeight, viewportWidth);
+const float2 viewportCenter(0.5, 0.5);
 const float4 origin(0, 0, 0, 1);
 
 int main(int argc, char** argv) {
   std::ios::sync_with_stdio(false);
 
   Image image(height, width, 3);
-  Sphere sphere(float4(0, 0, -1, 1), 0.3, ColorI4(255, 0, 0, 0));
-
-  float aspectRatio = widthF / heightF;
-  float viewportHeight = 2;  // x: [-1, 1], y: [-aspectRatio, aspectRatio]
-  float viewportWidth = viewportHeight * widthF / heightF;
-  float2 viewportSize(viewportHeight, viewportWidth);
-  float2 viewport_center(0.5, 0.5);
+  Sphere sphere(float4(aspectRatio, 0, -1, 1), 0.3, ColorI4(255, 0, 0, 0));
 
   int lines_rendered = 0;
   omp_lock_t lines_rendered_mutex;
@@ -38,18 +38,22 @@ int main(int argc, char** argv) {
 #pragma omp parallel for num_threads(16)
   for (int x = 0; x < height; x++) {
     for (int y = 0; y < width; y++) {
-      // pixel_h, pixel_w: (0, 1)
-      float pixel_h = (x + 0.5f) / heightF, pixel_w = (y + 0.5f) / widthF;
-      float2 pixel_pos((x + 0.5f) / heightF, (y + 0.5f) / widthF);
-      float2 pixel_pos_centered = pixel_pos - viewport_center;
-      float2 world_pos = viewportSize * pixel_pos_centered;
-      float4 dir = float4(world_pos.y(), world_pos.x(), -1, 0);
-      Ray r(origin, dir);
-      // print("pixel pos:", pixel_pos, "world pos:", world_pos);
-      // ColorI3 c = rayTrace(r);
-      ColorI3 c;
-      c = ColorI3(100, 255 * x / heightF, 255 * y / widthF);
-      if (sphere.intersect(r)) c = sphere.color;
+      // pixelPos: (0, 1)^2
+      float2 pixelPos((x + 0.5f) / heightF, (y + 0.5f) / widthF);
+      // pixelPosCentered: (-0.5, 0.5)^2
+      float2 pixelPosCentered = pixelPos - viewportCenter;
+      // a viewport plane at z = -1
+      float2 worldPos = viewportSize * pixelPosCentered;
+      // dir coordinates: x: left, y: up, -z: depth
+      float4 dir = float4(worldPos.y(), -worldPos.x(), -1, 0);
+      // emit a ray from the origin
+      Ray ray(origin, dir);
+      // background color (sky color)
+      ColorI3 c(255 * x / height, 255 * x / height, 255);
+      float blend = 0.5 * (static_cast<float3>(dir(0, 1, 2).safeNormalized()).y() + 1.0);
+      c = lerp(ColorI3(255, 255, 255), ColorI3(0, 0, 255), blend);
+      // ray trace
+      if (sphere.intersect(ray)) c = sphere.color;
       image.setPixel(x, y, c);
     }
 

@@ -1,15 +1,15 @@
 #pragma warning(disable : 4819)
 
-#include <cstdlib>
-#include <iostream>
-#include <omp.h>
+import <cstdlib>;
+import <iostream>;
+import <omp.h>;
 
-#include "Color.hpp"
-#include "Image.hpp"
-#include "Ray.hpp"
-#include "Sphere.hpp"
-#include "Utils.hpp"
-#include "Vector.hpp"
+import Utils;
+import Color;
+import Image;
+import Ray;
+import Sphere;
+import Vector;
 
 using std::cin;
 using std::cout;
@@ -54,7 +54,13 @@ int main(int argc, char** argv) {
           0.5 * (static_cast<float3>(dir(0, 1, 2).safeNormalized()).y() + 1.0);
       c = lerp(ColorI3(255, 255, 255), ColorI3(0, 0, 255), blend);
       // ray trace
-      if (sphere.intersect(ray)) c = sphere.color;
+      auto result = sphere.intersectTimes(ray);
+      result.ok([=, &c](std::pair<float, float> t) {
+        auto t1 = t.first;
+        auto pos = ray(t1)(0, 1, 2);
+        auto normal = (pos - sphere.center(0, 1, 2)).safeNormalized();
+        c = ToColorI3((normal + 1) * 0.5f);
+      });
       image.setPixel(x, y, c);
     }
 

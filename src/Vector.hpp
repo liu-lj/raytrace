@@ -1,5 +1,7 @@
 #pragma once
 
+#include <eigen3/Eigen/Eigen>
+
 #include <array>
 #include <cmath>
 #include <cstring>
@@ -8,10 +10,10 @@
 
 namespace MathUtils {
 // 限制向量的维度至少为 2
-template <int n>
+template <std::size_t n>
 concept IsVectorDim = n > 1;
 
-template <typename T, int n>
+template <typename T, std::size_t n>
   requires IsVectorDim<n>
 struct VectorBase {
   std::array<T, n> val;
@@ -33,10 +35,10 @@ struct VectorBase {
   VectorBase<T, n>& operator=(VectorBase<T, n>&& v) = default;
 
   // 维度不相同的向量的复制构造函数
-  template <typename T2, int n2>
+  template <typename T2, std::size_t n2>
   VectorBase(const VectorBase<T2, n2>& v) {
-    int len = std::min(n, n2);
-    for (int i = 0; i < len; i++) val[i] = static_cast<T>(v.val[i]);
+    std::size_t len = std::min(n, n2);
+    for (std::size_t i = 0; i < len; i++) val[i] = static_cast<T>(v.val[i]);
   }
 
   // 构造函数，参数为向量的值
@@ -49,7 +51,7 @@ struct VectorBase {
   }
 
   inline void readVals(std::initializer_list<T> vals) {
-    int i = 0;
+    std::size_t i = 0;
     for (auto v : vals) val[i++] = v;
   }
 
@@ -60,10 +62,10 @@ struct VectorBase {
 
   template <typename... Ts>
   auto operator()(Ts... args) const -> VectorBase<T, sizeof...(args)> {
-    constexpr int len = sizeof...(args);
+    constexpr std::size_t len = sizeof...(args);
     VectorBase<T, len> res;
     std::initializer_list<size_t> indexs{static_cast<size_t>(args)...};
-    int i = 0;
+    std::size_t i = 0;
     for (auto index : indexs) res.val[i++] = val[index];
     return res;
   }
@@ -72,20 +74,20 @@ struct VectorBase {
 #pragma region I/O functions
   inline std::string toString() const {
     std::stringstream ss;
-    for (int i = 0; i < n - 1; i++) ss << val[i] << " ";
+    for (std::size_t i = 0; i < n - 1; i++) ss << val[i] << " ";
     ss << val[n - 1];
     return ss.str();
   }
 
   inline friend std::istream& operator>>(std::istream& is,
                                          VectorBase<T, n>& v) {
-    for (int i = 0; i < n; i++) is >> v.val[i];
+    for (std::size_t i = 0; i < n; i++) is >> v.val[i];
     return is;
   }
 
   inline friend std::ostream& operator<<(std::ostream& os,
                                          const VectorBase<T, n>& v) {
-    for (int i = 0; i < n - 1; i++) os << v.val[i] << " ";
+    for (std::size_t i = 0; i < n - 1; i++) os << v.val[i] << " ";
     os << v.val[n - 1];
     return os;
   }
@@ -94,80 +96,88 @@ struct VectorBase {
 #pragma region Math functions
   inline VectorBase<T, n> operator+(const VectorBase<T, n>& v) const {
     VectorBase<T, n> res;
-    for (int i = 0; i < n; i++) res.val[i] = val[i] + v.val[i];
+    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] + v.val[i];
     return res;
   }
 
   inline VectorBase<T, n> operator-(const VectorBase<T, n>& v) const {
     VectorBase<T, n> res;
-    for (int i = 0; i < n; i++) res.val[i] = val[i] - v.val[i];
+    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] - v.val[i];
     return res;
   }
 
   inline T operator*(const VectorBase<T, n>& v) const { return dot(v); }
 
   inline VectorBase<T, n>& operator+=(const VectorBase<T, n>& v) {
-    for (int i = 0; i < n; i++) val[i] += v.val[i];
+    for (std::size_t i = 0; i < n; i++) val[i] += v.val[i];
     return *this;
   }
 
   inline VectorBase<T, n>& operator-=(const VectorBase<T, n>& v) {
-    for (int i = 0; i < n; i++) val[i] -= v.val[i];
+    for (std::size_t i = 0; i < n; i++) val[i] -= v.val[i];
     return *this;
   }
 
   inline VectorBase<T, n>& operator*=(const VectorBase<T, n>& v) {
-    for (int i = 0; i < n; i++) val[i] *= v.val[i];
+    for (std::size_t i = 0; i < n; i++) val[i] *= v.val[i];
     return *this;
   }
 
   inline VectorBase<T, n> operator+(T x) const {
     VectorBase<T, n> res;
-    for (int i = 0; i < n; i++) res.val[i] = val[i] + x;
+    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] + x;
     return res;
   }
 
   inline VectorBase<T, n> operator-(T x) const {
     VectorBase<T, n> res;
-    for (int i = 0; i < n; i++) res.val[i] = val[i] - x;
+    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] - x;
     return res;
   }
 
   inline VectorBase<T, n> operator*(T x) const {
     VectorBase<T, n> res;
-    for (int i = 0; i < n; i++) res.val[i] = val[i] * x;
+    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] * x;
+    return res;
+  }
+
+  template <typename T2>
+  inline auto operator*(const VectorBase<T2, n>& x) const
+      -> VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> {
+    VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> res;
+    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] * x[i];
     return res;
   }
 
   inline VectorBase<T, n> operator/(T x) const {
     VectorBase<T, n> res;
-    for (int i = 0; i < n; i++) res.val[i] = val[i] / x;
+    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] / x;
     return res;
   }
 
   inline VectorBase<T, n>& operator+=(T x) {
-    for (int i = 0; i < n; i++) val[i] += x;
+    for (std::size_t i = 0; i < n; i++) val[i] += x;
     return *this;
   }
 
   inline VectorBase<T, n>& operator-=(T x) {
-    for (int i = 0; i < n; i++) val[i] -= x;
+    for (std::size_t i = 0; i < n; i++) val[i] -= x;
     return *this;
   }
 
   inline VectorBase<T, n>& operator*=(T x) {
-    for (int i = 0; i < n; i++) val[i] *= x;
+    for (std::size_t i = 0; i < n; i++) val[i] *= x;
     return *this;
   }
 
   inline VectorBase<T, n>& operator/=(T x) {
-    for (int i = 0; i < n; i++) val[i] /= x;
+    for (std::size_t i = 0; i < n; i++) val[i] /= x;
     return *this;
   }
 
   inline T dot(const VectorBase<T, n>& v) const {
     T sum = 0;
-    for (int i = 0; i < n; i++) sum += val[i] * v.val[i];
+    for (std::size_t i = 0; i < n; i++) sum += val[i] * v.val[i];
     return sum;
   }
 
@@ -175,20 +185,20 @@ struct VectorBase {
 
   inline VectorBase<T, n>& normalized() {
     T invLen = 1 / length();
-    for (int i = 0; i < n; i++) val[i] *= invLen;
+    for (std::size_t i = 0; i < n; i++) val[i] *= invLen;
     return *this;
   }
 
   inline VectorBase<T, n>& safeNormalized() {
     T invLen = 1 / max(length(), 1e-3);
-    for (int i = 0; i < n; i++) val[i] *= invLen;
+    for (std::size_t i = 0; i < n; i++) val[i] *= invLen;
     return *this;
   }
 #pragma endregion
 };
 
 #pragma region Derived types
-template <typename T, int n>
+template <typename T, std::size_t n>
 struct Vector : public VectorBase<T, n> {
   using VectorBase<T, n>::VectorBase;
   Vector(const VectorBase<T, n>& other) : VectorBase<T, n>(other) {}
@@ -247,19 +257,19 @@ using float4 = Vector<float, 4>;
 #pragma endregion
 
 #pragma region Non-member functions
-template <typename T, int n>
+template <typename T, std::size_t n>
 inline VectorBase<T, n>& normalize(const VectorBase<T, n>& v) {
   T invLen = 1 / v.length();
   VectorBase<T, n> res;
-  for (int i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
+  for (std::size_t i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
   return res;
 }
 
-template <typename T, int n>
+template <typename T, std::size_t n>
 inline VectorBase<T, n>& safeNormalize(const VectorBase<T, n>& v) {
   T invLen = 1 / (v.length() + 1e-5);
   VectorBase<T, n> res;
-  for (int i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
+  for (std::size_t i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
   return res;
 }
 #pragma endregion

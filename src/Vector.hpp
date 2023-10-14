@@ -203,16 +203,21 @@ struct VectorBase {
     return sum;
   }
 
-  inline float length() const { return dot(*this); }
+  inline float length() const { return sqrt(dot(*this)); }
+  inline float length2() const { return dot(*this); }
 
   inline VectorBase<T, n>& normalized() {
-    float invLen = 1 / length();
+    auto len2 = length2();
+    if (std::abs(len2 - 1) < 1e-3) return *this;
+    float invLen = 1 / sqrt(len2);
     for (std::size_t i = 0; i < n; i++) val[i] *= invLen;
     return *this;
   }
 
   inline VectorBase<T, n>& safeNormalized() {
-    float invLen = 1 / std::max(length(), static_cast<float>(1e-3));
+    auto len2 = length2();
+    if (std::abs(len2 - 1) < 1e-3) return *this;
+    auto invLen = 1 / std::max(sqrt(len2), static_cast<decltype(len2)>(1e-3));
     for (std::size_t i = 0; i < n; i++) val[i] *= invLen;
     return *this;
   }
@@ -281,7 +286,9 @@ using float4 = Vector<float, 4>;
 #pragma region Non-member functions
 template <typename T, std::size_t n>
 inline VectorBase<T, n>& normalize(const VectorBase<T, n>& v) {
-  float invLen = 1 / v.length();
+  auto len2 = v.length2();
+  if (std::abs(len2 - 1) < 1e-3) return VectorBase<T, n>(v);
+  float invLen = 1 / sqrt(len2);
   VectorBase<T, n> res;
   for (std::size_t i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
   return res;
@@ -289,7 +296,9 @@ inline VectorBase<T, n>& normalize(const VectorBase<T, n>& v) {
 
 template <typename T, std::size_t n>
 inline VectorBase<T, n>& safeNormalize(const VectorBase<T, n>& v) {
-  float invLen = 1 / std::max(v.length(), static_cast<float>(1e-3));
+  auto len2 = v.length2();
+  if (std::abs(len2 - 1) < 1e-3) return VectorBase<T, n>(v);
+  auto invLen = 1 / std::max(sqrt(len2), static_cast<decltype(len2)>(1e-3));
   VectorBase<T, n> res;
   for (std::size_t i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
   return res;

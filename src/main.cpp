@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
   std::ios::sync_with_stdio(false);
 
   Image image(height, width, 3);
-  Sphere sphere{0.3, float4(aspectRatio, 0, -1, 1), ColorI4(255, 0, 0, 0)};
+  Sphere sphere{0.5, float4(0, 0, -1, 1), ColorI4(255, 0, 0, 0)};
 
   int lines_rendered = 0;
   omp_lock_t lines_rendered_mutex;

@@ -94,38 +94,17 @@ struct VectorBase {
 #pragma endregion
 
 #pragma region Math functions
-  inline VectorBase<T, n> operator+(const VectorBase<T, n>& v) const {
-    VectorBase<T, n> res;
-    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] + v.val[i];
-    return res;
-  }
-
-  inline VectorBase<T, n> operator-(const VectorBase<T, n>& v) const {
-    VectorBase<T, n> res;
-    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] - v.val[i];
-    return res;
-  }
-
-  inline T operator*(const VectorBase<T, n>& v) const { return dot(v); }
-
-  inline VectorBase<T, n>& operator+=(const VectorBase<T, n>& v) {
-    for (std::size_t i = 0; i < n; i++) val[i] += v.val[i];
-    return *this;
-  }
-
-  inline VectorBase<T, n>& operator-=(const VectorBase<T, n>& v) {
-    for (std::size_t i = 0; i < n; i++) val[i] -= v.val[i];
-    return *this;
-  }
-
-  inline VectorBase<T, n>& operator*=(const VectorBase<T, n>& v) {
-    for (std::size_t i = 0; i < n; i++) val[i] *= v.val[i];
-    return *this;
-  }
-
   inline VectorBase<T, n> operator+(T x) const {
     VectorBase<T, n> res;
     for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] + x;
+    return res;
+  }
+
+  template <typename T2>
+  inline auto operator+(const VectorBase<T2, n>& x) const
+      -> VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> {
+    VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> res;
+    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] + x.val[i];
     return res;
   }
 
@@ -135,17 +114,27 @@ struct VectorBase {
     return res;
   }
 
+  template <typename T2>
+  inline auto operator-(const VectorBase<T2, n>& x) const
+      -> VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> {
+    VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> res;
+    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] - x.val[i];
+    return res;
+  }
+
+  // multipy by a scalar
   inline VectorBase<T, n> operator*(T x) const {
     VectorBase<T, n> res;
     for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] * x;
     return res;
   }
 
+  // multipy by a vector element-wise
   template <typename T2>
   inline auto operator*(const VectorBase<T2, n>& x) const
       -> VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> {
     VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> res;
-    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] * x[i];
+    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] * x.val[i];
     return res;
   }
 
@@ -160,13 +149,28 @@ struct VectorBase {
     return *this;
   }
 
+  inline VectorBase<T, n>& operator+=(const VectorBase<T, n>& v) {
+    for (std::size_t i = 0; i < n; i++) val[i] += v.val[i];
+    return *this;
+  }
+
   inline VectorBase<T, n>& operator-=(T x) {
     for (std::size_t i = 0; i < n; i++) val[i] -= x;
     return *this;
   }
 
+  inline VectorBase<T, n>& operator-=(const VectorBase<T, n>& v) {
+    for (std::size_t i = 0; i < n; i++) val[i] -= v.val[i];
+    return *this;
+  }
+
   inline VectorBase<T, n>& operator*=(T x) {
     for (std::size_t i = 0; i < n; i++) val[i] *= x;
+    return *this;
+  }
+
+  inline VectorBase<T, n>& operator*=(const VectorBase<T, n>& v) {
+    for (std::size_t i = 0; i < n; i++) val[i] *= v.val[i];
     return *this;
   }
 

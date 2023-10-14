@@ -29,7 +29,7 @@ struct Sphere {
   inline bool intersect(const Ray& ray) const {
     float3 orig = ray.origin;
     float3 dir = ray.direction;
-    float3 dis = orig - center;
+    float3 dis = orig - center(0, 1, 2);
     float a = dir.dot(dir);
     float b = 2 * dir.dot(dis);
     float c = dis.dot(dis) - radius * radius;

@@ -19,9 +19,11 @@ const int width = 800, height = 400;
 const float widthF = width, heightF = height;
 const float4 origin(0, 0, 0, 1);
 
-int main() {
+int main(int argc, char** argv) {
+  std::ios::sync_with_stdio(false);
+
   Image image(height, width, 3);
-  Sphere sphere(float4(0, 0, -1, 1), 1, ColorI4(255, 0, 0, 0));
+  Sphere sphere(float4(0, 0, -1, 1), 0.3, ColorI4(255, 0, 0, 0));
 
   float aspectRatio = widthF / heightF;
   float viewportHeight = 2;  // x: [-1, 1], y: [-aspectRatio, aspectRatio]
@@ -37,16 +39,17 @@ int main() {
   for (int x = 0; x < height; x++) {
     for (int y = 0; y < width; y++) {
       // pixel_h, pixel_w: (0, 1)
-      // float pixel_h = (x + 0.5f) / heightF, pixel_w = (y + 0.5f) / widthF;
+      float pixel_h = (x + 0.5f) / heightF, pixel_w = (y + 0.5f) / widthF;
       float2 pixel_pos((x + 0.5f) / heightF, (y + 0.5f) / widthF);
       float2 pixel_pos_centered = pixel_pos - viewport_center;
-      // float2 world_pos = viewportSize * pixel_pos_centered;
-      // float4 dir = float4(world_pos.y(), world_pos.x(), -1, 0);
-      // Ray r(origin, dir);
+      float2 world_pos = viewportSize * pixel_pos_centered;
+      float4 dir = float4(world_pos.y(), world_pos.x(), -1, 0);
+      Ray r(origin, dir);
+      // print("pixel pos:", pixel_pos, "world pos:", world_pos);
       // ColorI3 c = rayTrace(r);
       ColorI3 c;
       c = ColorI3(100, 255 * x / heightF, 255 * y / widthF);
-      // if (sphere.intersect(r)) c = sphere.color;
+      if (sphere.intersect(r)) c = sphere.color;
       image.setPixel(x, y, c);
     }
 
@@ -60,7 +63,7 @@ int main() {
   omp_destroy_lock(&lines_rendered_mutex);
 
   image.writePNG("test.png");
-  print("image saved.");
+  print("image saved at", get_dir(argv[0]) + "/test.png");
 
   return 0;
 }

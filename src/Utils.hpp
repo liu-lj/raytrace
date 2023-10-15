@@ -25,3 +25,17 @@ template <typename T, typename T2>
 decltype(auto) lerp(T a, T b, T2 t) {
   return a * (1 - t) + b * t;
 }
+
+template <typename T>
+struct Result {
+  bool success;
+  T returnVal;
+  Result() : success(false) {}
+  Result(T returnVal) : success(true), returnVal(returnVal) {}
+  void ok(std::function<void(T)> func) {
+    if (success) func(returnVal);
+  }
+  void fail(std::function<void()> func) {
+    if (!success) func();
+  }
+};

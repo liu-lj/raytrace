@@ -8,31 +8,20 @@ struct Sphere {
   float radius;
   float4 center;
   ColorI4 color;
-  
-  inline bool intersect(const Ray& ray, float& t0, float& t1) const {
-    float3 orig = ray.origin;
-    float3 dir = ray.direction;
-    float3 dis = orig - center(0, 1, 2);
-    float a = dir.dot(dir);
-    float b = 2 * dir.dot(dis);
-    float c = dis.dot(dis) - radius * radius;
-    float discriminant = b * b - 4 * a * c;
-    if (discriminant > 0) {
-      t0 = (-b - sqrt(discriminant)) / 2 / a;
-      t1 = (-b + sqrt(discriminant)) / 2 / a;
-      return true;
-    }
-    return false;
-  }
 
-  inline bool intersect(const Ray& ray) const {
+  inline Result<std::pair<float, float>> intersectTimes(const Ray& ray) const {
     float3 orig = ray.origin;
     float3 dir = ray.direction;
-    float3 dis = orig - center(0, 1, 2);
+    float3 dis = center(0, 1, 2) - orig;
     float a = dir.dot(dir);
-    float b = 2 * dir.dot(dis);
-    float c = dis.dot(dis) - radius * radius;
-    float discriminant = b * b - 4 * a * c;
-    return discriminant > 0;
+    float h = dir.dot(dis);
+    float c = dis.pow() - radius * radius;
+    float discriminant = h * h - a * c;
+
+    using result = Result<std::pair<float, float>>;
+    return discriminant >= 0
+               ? result(std::make_pair((h - sqrt(discriminant)) / a,
+                                       (h + sqrt(discriminant)) / a))
+               : result();
   }
 };

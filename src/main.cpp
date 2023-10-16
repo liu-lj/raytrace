@@ -1,8 +1,9 @@
 #pragma warning(disable : 4819)
 
-import <cstdlib>;
-import <iostream>;
 import <omp.h>;
+import std.core;
+//import <cstdlib>;
+//import <iostream>;
 
 import Utils;
 import Color;
@@ -10,10 +11,6 @@ import Image;
 import Ray;
 import Sphere;
 import Vector;
-
-using std::cin;
-using std::cout;
-using std::endl;
 
 const int width = 600, height = 400;
 const float widthF = width, heightF = height;
@@ -50,7 +47,7 @@ int main(int argc, char** argv) {
       Ray ray{origin, dir};
       // background color (sky color)
       ColorI3 c(255 * x / height, 255 * x / height, 255);
-      float blend =
+      auto blend =
           0.5 * (static_cast<float3>(dir(0, 1, 2).safeNormalized()).y() + 1.0);
       c = lerp(ColorI3(255, 255, 255), ColorI3(0, 0, 255), blend);
       // ray trace

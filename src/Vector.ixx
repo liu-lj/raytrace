@@ -141,7 +141,7 @@ struct VectorBase {
   inline VectorBase<T, n> operator*(T2 x) const {
     VectorBase<T, n> res;
     for (std::size_t i = 0; i < n; i++)
-      res.val[i] = val[i] * x;
+      res.val[i] = static_cast<T>(val[i] * x);
     return res;
   }
 

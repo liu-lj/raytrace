@@ -19,7 +19,7 @@ export {
   // ONLY can be used to process argv[0] in int main(int argc, char** argv)
   std::string get_dir(std::string path) {
     std::replace(path.begin(), path.end(), '\\', '/');
-    int pos = path.find_last_of('/');
+    auto pos = path.find_last_of('/');
     return path.substr(0, pos);
   }
 

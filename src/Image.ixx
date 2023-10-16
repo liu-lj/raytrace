@@ -1,12 +1,15 @@
-export module Image;
+module;
 
-import <vector>;
-import Color;
-
+#define _CRT_SECURE_NO_WARNINGS
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stb_image_write.h>
+
+export module Image;
+
+import <vector>;
+import Color;
 
 export {
   using byte = unsigned char;

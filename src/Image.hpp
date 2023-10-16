@@ -13,18 +13,18 @@ using byte = unsigned char;
 
 struct Image {
   std::vector<byte> data;
-  int height, width, channels;
+  size_t height, width, channels;
 
-  Image(int height, int width, int channels)
+  Image(size_t height, size_t width, size_t channels)
       : height(height), width(width), channels(channels) {
     data.resize(height * width * channels);
   }
   
-  inline byte& operator()(int h, int w, int c) {
+  inline byte& operator()(size_t h, size_t w, size_t c) {
     return data[(h * width + w) * channels + c];
   }
   
-  inline void setPixel(int h, int w, ColorI3 color) {
+  inline void setPixel(size_t h, size_t w, ColorI3 color) {
     this->Image::operator()(h, w, 0) = color.x();
     this->Image::operator()(h, w, 1) = color.y();
     this->Image::operator()(h, w, 2) = color.z();

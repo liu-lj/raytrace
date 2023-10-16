@@ -1,7 +1,9 @@
 #pragma once
 
+#include <algorithm>
 #include <iostream>
 #include <string>
+#include <functional>
 
 template <typename T0, typename... Ts>
 inline void print(T0 t0, Ts... ts) {

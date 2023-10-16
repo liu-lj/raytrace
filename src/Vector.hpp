@@ -1,7 +1,5 @@
 #pragma once
 
-#include <eigen3/Eigen/Eigen>
-
 #include <array>
 #include <cmath>
 #include <cstring>
@@ -12,10 +10,10 @@
 
 namespace MathUtils {
 // 限制向量的维度至少为 2
-template <std::size_t n>
+template <size_t n>
 concept IsVectorDim = n > 1;
 
-template <typename T, std::size_t n>
+template <typename T, size_t n>
   requires IsVectorDim<n>
 struct VectorBase {
   std::array<T, n> val;
@@ -37,10 +35,10 @@ struct VectorBase {
   VectorBase<T, n>& operator=(VectorBase<T, n>&& v) = default;
 
   // 维度不相同的向量的复制构造函数
-  template <typename T2, std::size_t n2>
+  template <typename T2, size_t n2>
   VectorBase(const VectorBase<T2, n2>& v) {
-    std::size_t len = std::min(n, n2);
-    for (std::size_t i = 0; i < len; i++) val[i] = static_cast<T>(v.val[i]);
+    size_t len = std::min(n, n2);
+    for (size_t i = 0; i < len; i++) val[i] = static_cast<T>(v.val[i]);
   }
 
   // 构造函数，参数为向量的值
@@ -53,21 +51,28 @@ struct VectorBase {
   }
 
   inline void readVals(std::initializer_list<T> vals) {
-    std::size_t i = 0;
+    size_t i = 0;
     for (auto v : vals) val[i++] = v;
   }
 
+  // 带边界检查的下标访问
   T& operator[](int i) {
+    if (i < 0 || i >= n) throw std::out_of_range("Index out of range!");
+    return val[i];
+  }
+
+  // 带边界检查的下标访问
+  const T& operator[](int i) const {
     if (i < 0 || i >= n) throw std::out_of_range("Index out of range!");
     return val[i];
   }
 
   template <typename... Ts>
   auto operator()(Ts... args) const -> VectorBase<T, sizeof...(args)> {
-    constexpr std::size_t len = sizeof...(args);
+    constexpr size_t len = sizeof...(args);
     VectorBase<T, len> res;
     std::initializer_list<size_t> indexs{static_cast<size_t>(args)...};
-    std::size_t i = 0;
+    size_t i = 0;
     for (auto index : indexs) res.val[i++] = val[index];
     return res;
   }
@@ -76,20 +81,20 @@ struct VectorBase {
 #pragma region I/O functions
   inline std::string toString() const {
     std::stringstream ss;
-    for (std::size_t i = 0; i < n - 1; i++) ss << val[i] << " ";
+    for (size_t i = 0; i < n - 1; i++) ss << val[i] << " ";
     ss << val[n - 1];
     return ss.str();
   }
 
   inline friend std::istream& operator>>(std::istream& is,
                                          VectorBase<T, n>& v) {
-    for (std::size_t i = 0; i < n; i++) is >> v.val[i];
+    for (size_t i = 0; i < n; i++) is >> v.val[i];
     return is;
   }
 
   inline friend std::ostream& operator<<(std::ostream& os,
                                          const VectorBase<T, n>& v) {
-    for (std::size_t i = 0; i < n - 1; i++) os << v.val[i] << " ";
+    for (size_t i = 0; i < n - 1; i++) os << v.val[i] << " ";
     os << v.val[n - 1];
     return os;
   }
@@ -100,7 +105,7 @@ struct VectorBase {
     requires std::is_arithmetic_v<T2>
   inline VectorBase<T, n> operator+(T2 x) const {
     VectorBase<T, n> res;
-    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] + x;
+    for (size_t i = 0; i < n; i++) res.val[i] = val[i] + x;
     return res;
   }
 
@@ -108,7 +113,7 @@ struct VectorBase {
   inline auto operator+(const VectorBase<T2, n>& x) const
       -> VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> {
     VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> res;
-    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] + x.val[i];
+    for (size_t i = 0; i < n; i++) res.val[i] = val[i] + x.val[i];
     return res;
   }
 
@@ -116,7 +121,7 @@ struct VectorBase {
     requires std::is_arithmetic_v<T2>
   inline VectorBase<T, n> operator-(T2 x) const {
     VectorBase<T, n> res;
-    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] - x;
+    for (size_t i = 0; i < n; i++) res.val[i] = val[i] - x;
     return res;
   }
 
@@ -124,7 +129,7 @@ struct VectorBase {
   inline auto operator-(const VectorBase<T2, n>& x) const
       -> VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> {
     VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> res;
-    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] - x.val[i];
+    for (size_t i = 0; i < n; i++) res.val[i] = val[i] - x.val[i];
     return res;
   }
 
@@ -133,7 +138,7 @@ struct VectorBase {
     requires std::is_arithmetic_v<T2>
   inline VectorBase<T, n> operator*(T2 x) const {
     VectorBase<T, n> res;
-    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] * x;
+    for (size_t i = 0; i < n; i++) res.val[i] = val[i] * x;
     return res;
   }
 
@@ -142,7 +147,7 @@ struct VectorBase {
   inline auto operator*(const VectorBase<T2, n>& x) const
       -> VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> {
     VectorBase<decltype(std::declval<T>() * std::declval<T2>()), n> res;
-    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] * x.val[i];
+    for (size_t i = 0; i < n; i++) res.val[i] = val[i] * x.val[i];
     return res;
   }
 
@@ -150,82 +155,88 @@ struct VectorBase {
     requires std::is_arithmetic_v<T2>
   inline VectorBase<T, n> operator/(T2 x) const {
     VectorBase<T, n> res;
-    for (std::size_t i = 0; i < n; i++) res.val[i] = val[i] / x;
+    for (size_t i = 0; i < n; i++) res.val[i] = val[i] / x;
     return res;
   }
 
   template <typename T2>
     requires std::is_arithmetic_v<T2>
   inline VectorBase<T, n>& operator+=(T2 x) {
-    for (std::size_t i = 0; i < n; i++) val[i] += x;
+    for (size_t i = 0; i < n; i++) val[i] += x;
     return *this;
   }
 
   inline VectorBase<T, n>& operator+=(const VectorBase<T, n>& v) {
-    for (std::size_t i = 0; i < n; i++) val[i] += v.val[i];
+    for (size_t i = 0; i < n; i++) val[i] += v.val[i];
     return *this;
   }
 
   template <typename T2>
     requires std::is_arithmetic_v<T2>
   inline VectorBase<T, n>& operator-=(T2 x) {
-    for (std::size_t i = 0; i < n; i++) val[i] -= x;
+    for (size_t i = 0; i < n; i++) val[i] -= x;
     return *this;
   }
 
   inline VectorBase<T, n>& operator-=(const VectorBase<T, n>& v) {
-    for (std::size_t i = 0; i < n; i++) val[i] -= v.val[i];
+    for (size_t i = 0; i < n; i++) val[i] -= v.val[i];
     return *this;
   }
 
   template <typename T2>
     requires std::is_arithmetic_v<T2>
   inline VectorBase<T, n>& operator*=(T2 x) {
-    for (std::size_t i = 0; i < n; i++) val[i] *= x;
+    for (size_t i = 0; i < n; i++) val[i] *= x;
     return *this;
   }
 
   inline VectorBase<T, n>& operator*=(const VectorBase<T, n>& v) {
-    for (std::size_t i = 0; i < n; i++) val[i] *= v.val[i];
+    for (size_t i = 0; i < n; i++) val[i] *= v.val[i];
     return *this;
   }
 
   template <typename T2>
     requires std::is_arithmetic_v<T2>
   inline VectorBase<T, n>& operator/=(T2 x) {
-    for (std::size_t i = 0; i < n; i++) val[i] /= x;
+    for (size_t i = 0; i < n; i++) val[i] /= x;
     return *this;
   }
 
-  inline float dot(const VectorBase<T, n>& v) const {
-    float sum = 0;
-    for (std::size_t i = 0; i < n; i++) sum += val[i] * v.val[i];
+  inline T dot(const VectorBase<T, n>& v) const {
+    T sum = 0;
+    for (size_t i = 0; i < n; i++) sum += val[i] * v.val[i];
     return sum;
   }
 
-  inline float length() const { return sqrt(dot(*this)); }
-  inline float pow() const { return dot(*this); }
+  inline T pow() const { return dot(*this); }
+  inline decltype(auto) length() const { return sqrt(pow()); }
 
+  // 浮点型向量的归一化 (整型向量不支持此操作)
+  template <typename T>
+    requires std::floating_point<T>
   inline VectorBase<T, n>& normalized() {
     auto len2 = pow();
     if (std::abs(len2 - 1) < 1e-3) return *this;
     float invLen = 1 / sqrt(len2);
-    for (std::size_t i = 0; i < n; i++) val[i] *= invLen;
+    for (size_t i = 0; i < n; i++) val[i] *= invLen;
     return *this;
   }
 
+  // 浮点型向量的安全归一化 (整型向量不支持此操作)
+  template <typename T>
+    requires std::floating_point<T>
   inline VectorBase<T, n>& safeNormalized() {
     auto len2 = pow();
     if (std::abs(len2 - 1) < 1e-3) return *this;
     auto invLen = 1 / std::max(sqrt(len2), static_cast<decltype(len2)>(1e-3));
-    for (std::size_t i = 0; i < n; i++) val[i] *= invLen;
+    for (size_t i = 0; i < n; i++) val[i] *= invLen;
     return *this;
   }
 #pragma endregion
 };
 
 #pragma region Derived types
-template <typename T, std::size_t n>
+template <typename T, size_t n>
 struct Vector : public VectorBase<T, n> {
   using VectorBase<T, n>::VectorBase;
   Vector(const VectorBase<T, n>& other) : VectorBase<T, n>(other) {}
@@ -284,23 +295,27 @@ using float4 = Vector<float, 4>;
 #pragma endregion
 
 #pragma region Non-member functions
-template <typename T, std::size_t n>
+// 浮点型向量的归一化 (整型向量不支持此操作)
+template <typename T, size_t n>
+  requires std::floating_point<T>
 inline VectorBase<T, n>& normalize(const VectorBase<T, n>& v) {
   auto len2 = v.pow();
   if (std::abs(len2 - 1) < 1e-3) return VectorBase<T, n>(v);
-  float invLen = 1 / sqrt(len2);
+  auto invLen = 1 / sqrt(len2);
   VectorBase<T, n> res;
-  for (std::size_t i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
+  for (size_t i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
   return res;
 }
 
-template <typename T, std::size_t n>
+// 浮点型向量的安全归一化 (整型向量不支持此操作)
+template <typename T, size_t n>
+  requires std::floating_point<T>
 inline VectorBase<T, n>& safeNormalize(const VectorBase<T, n>& v) {
   auto len2 = v.pow();
   if (std::abs(len2 - 1) < 1e-3) return VectorBase<T, n>(v);
   auto invLen = 1 / std::max(sqrt(len2), static_cast<decltype(len2)>(1e-3));
   VectorBase<T, n> res;
-  for (std::size_t i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
+  for (size_t i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
   return res;
 }
 #pragma endregion

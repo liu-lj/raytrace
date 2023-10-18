@@ -53,8 +53,16 @@ constexpr const float INF = std::numeric_limits<float>().infinity();
 
 inline float Deg2Rad(float degrees) { return degrees * PI / 180; }
 
+// rand float in [0, 1)
 inline float RandFloat() {
-  static std::uniform_real_distribution<float> distribution(0.0, 1.0);
+  static std::uniform_real_distribution<float> distribution(0, 1);
+  static std::mt19937 generator;
+  return distribution(generator);
+}
+
+// rand float in [min, max)
+inline float RandFloat(float min, float max) {
+  std::uniform_real_distribution<float> distribution(min, max);
   static std::mt19937 generator;
   return distribution(generator);
 }

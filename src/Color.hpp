@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vector.hpp"
+#include "include/Vector.hpp"
 
 using ColorF3 = float3;
 using ColorI3 = int3;

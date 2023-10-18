@@ -2,6 +2,8 @@
 
 #include <omp.h>
 
+#include "include/MathUtils.hpp"
+#include "Interval.hpp"
 #include "Hittable.hpp"
 #include "Color.hpp"
 #include "Ray.hpp"
@@ -92,8 +94,8 @@ struct Camera {
     auto result = scene.hit(ray, Interval(1e-3, INF));
     if (result.success) {
       auto hit = result.returnVal;
-      // float3 dir = MathUtils::RandomOnHemisphere(hit.normal);
-      float3 dir = hit.normal + MathUtils::RandomInUnitSphere();
+      // float3 dir = RandomOnHemisphere(hit.normal);
+      float3 dir = hit.normal + RandomInUnitSphere();
       dir.safeNormalized();
       return rayColor(Ray{hit.point, dir}, scene, depth + 1) * 0.9;
     }

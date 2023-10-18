@@ -7,8 +7,9 @@
 #include <string>
 
 #include "Utils.hpp"
+#include "MathUtils.hpp"
 
-namespace MathUtils {
+namespace VectorDef {
 // 限制向量的维度至少为 2
 template <size_t n>
 concept IsVectorDim = n > 1;
@@ -324,7 +325,26 @@ inline VectorBase<T, n> safeNormalize(const VectorBase<T, n> &v) {
   for (size_t i = 0; i < n; i++) res.val[i] = v.val[i] * invLen;
   return res;
 }
+#pragma endregion
+}  // namespace MathUtils
 
+using VectorDef::normalize;
+using VectorDef::safeNormalize;
+
+using VectorDef::Vector;
+
+using VectorDef::double2;
+using VectorDef::float2;
+using VectorDef::int2;
+
+using VectorDef::double3;
+using VectorDef::float3;
+using VectorDef::int3;
+
+using VectorDef::float4;
+using VectorDef::int4;
+
+// extand functions
 inline float3 RandomInUnitSphere() {
   while (true) {
     auto vec = float3::random(-1, 1);
@@ -342,21 +362,3 @@ inline float3 RandomOnHemisphere(const float3 &normal) {
   else
     return inUnitSphere * -1;
 }
-#pragma endregion
-}  // namespace MathUtils
-
-using MathUtils::normalize;
-using MathUtils::safeNormalize;
-
-using MathUtils::Vector;
-
-using MathUtils::double2;
-using MathUtils::float2;
-using MathUtils::int2;
-
-using MathUtils::double3;
-using MathUtils::float3;
-using MathUtils::int3;
-
-using MathUtils::float4;
-using MathUtils::int4;

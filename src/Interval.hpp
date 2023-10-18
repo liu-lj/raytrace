@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utils.hpp"
+#include "include/MathUtils.hpp"
 
 struct Interval {
   float min, max;

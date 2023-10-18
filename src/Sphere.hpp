@@ -1,16 +1,21 @@
 #pragma once
 
-#include "Vector.hpp"
+#include <memory>
+
+#include "include/Result.hpp"
 #include "Ray.hpp"
 #include "Color.hpp"
 #include "Hittable.hpp"
+#include "Material.hpp"
 
 struct Sphere : public Hittable {
   float radius;
   float4 center;
+  std::shared_ptr<Material> material;
 
   Sphere() {}
-  Sphere(float radius, float4 center) : radius(radius), center(center) {}
+  Sphere(float radius, float4 center, std::shared_ptr<Material> material)
+      : radius(radius), center(center), material(material) {}
 
   inline Result<HitRecord> hit(const Ray &ray,
                                Interval rayTime) const override {
@@ -39,10 +44,11 @@ struct Sphere : public Hittable {
     // normal 和 dir 异向，说明射线从球外部射入，为正面
     bool isFrontFace = normal.dot(dir) < 0;
     return HitRecord{
-        time,        // ray time
-        point,       // hit point
-        normal,      // normal
-        isFrontFace  // front face
+        time,         // ray time
+        point,        // hit point
+        normal,       // normal
+        isFrontFace,  // front face
+        material      // material
     };
   }
 };

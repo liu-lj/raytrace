@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vector.hpp"
+#include "include/Vector.hpp"
 
 struct Ray {
   float4 origin, direction;

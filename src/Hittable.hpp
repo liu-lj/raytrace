@@ -3,15 +3,20 @@
 #include <vector>
 #include <memory>
 
-#include "Interval.hpp"
-#include "Utils.hpp"
+#include "include/Utils.hpp"
 #include "Ray.hpp"
+#include "Interval.hpp"
+// don't import "Material.hpp" here
+
+// avoid circular dependency
+struct Material;
 
 struct HitRecord {
   float rayTime;
   float4 point;
   float3 normal;
   bool frontFace;
+  std::shared_ptr<Material> material;
 };
 
 struct Hittable {

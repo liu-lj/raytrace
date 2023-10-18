@@ -14,7 +14,7 @@ struct Sphere : public Hittable {
   Sphere(float radius, float4 center, ColorI4 color)
       : radius(radius), center(center), color(color) {}
 
-  inline Result<HitRecord> hit(const Ray& ray, float tmin, float tmax) const {
+  inline Result<HitRecord> hit(const Ray& ray, float tmin, float tmax) const override {
     float3 orig = ray.origin;
     float3 dir = ray.direction;
     float3 dis = center(0, 1, 2) - orig;

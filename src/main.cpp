@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
   HittableList scene(std::make_shared<Sphere>(0.5, float4(0, 0, -1, 1),
                                               ColorI4(255, 0, 0, 0)));
   Camera camera(width, height);
+  camera.samplesPerPixel = 10;
   image = camera.render(scene);
   image.writePNG("test.png");
   print("image saved at", get_dir(argv[0]) + "/test.png");

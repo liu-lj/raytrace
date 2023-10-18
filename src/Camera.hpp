@@ -11,6 +11,8 @@ struct Camera {
   static const float2 viewportCenter;
   static const float4 origin;
 
+  int samplesPerPixel = 1;
+
   int width, height;
   float widthF, heightF;
   float aspectRatio;
@@ -36,20 +38,15 @@ struct Camera {
 #pragma omp parallel for num_threads(16)
     for (int x = 0; x < height; x++) {
       for (int y = 0; y < width; y++) {
-        // pixelPos: (0, 1)^2
-        float2 pixelPos((x + 0.5f) / heightF, (y + 0.5f) / widthF);
-        // pixelPosCentered: (-0.5, 0.5)^2
-        float2 pixelPosCentered = pixelPos - viewportCenter;
-        // a viewport plane at z = -1
-        float2 worldPos = viewportSize * pixelPosCentered;
-        // dir coordinates: x: left, y: up, -z: depth
-        float4 dir = float4(worldPos.y(), -worldPos.x(), -1, 0);
-        // emit a ray from the origin
-        Ray ray{origin, dir};
-
-        ColorI3 c = rayColor(ray, scene);
-
-        image.setPixel(x, y, c);
+        ColorI3 colorSum(0, 0, 0);
+        for (int s = 0; s < samplesPerPixel; s++) {
+          auto samplePos = getRandomSamplePos(x, y);
+          samplePos[0] /= heightF;
+          samplePos[1] /= widthF;
+          colorSum += screenPosColor(samplePos, scene);
+        }
+        image.setPixel(x, y, colorSum / samplesPerPixel);
+        // image.setPixel(x, y, screenPosColor(getRandomSamplePos(x, y), scene));
       }
 
       omp_set_lock(&lines_rendered_mutex);
@@ -62,6 +59,29 @@ struct Camera {
     omp_destroy_lock(&lines_rendered_mutex);
 
     return image;
+  }
+
+  inline ColorI3 screenPosColor(const float2 &screenPos,
+                                const HittableList &scene) {
+    // screenPos: (0, 1)^2
+    // screenPosCentered: (-0.5, 0.5)^2
+    float2 screenPosCentered = screenPos - viewportCenter;
+    // a viewport plane at z = -1
+    float2 worldPos = viewportSize * screenPosCentered;
+    // dir coordinates: x: left, y: up, -z: depth
+    float4 dir = float4(worldPos.y(), -worldPos.x(), -1, 0);
+    // emit a ray from the origin
+    Ray ray{origin, dir};
+
+    return rayColor(ray, scene);
+  }
+
+  inline float2 getRandomSamplePos(int x, int y) {
+    // x in [0, height), y in [0, width)
+    float2 screenPos(x, y);
+    // delat.x, delta.y in [0, 1)
+    float2 delta(RandFloat(), RandFloat());
+    return screenPos + delta;
   }
 
   inline ColorI3 rayColor(const Ray &ray, const Hittable &scene) const {

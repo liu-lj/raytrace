@@ -11,7 +11,8 @@ struct Camera {
   static const float2 viewportCenter;
   static const float4 origin;
 
-  int samplesPerPixel = 1;
+  int samplesPerPixel = 4;
+  int maxDepth = 10;
 
   int width, height;
   float widthF, heightF;
@@ -43,10 +44,10 @@ struct Camera {
           auto samplePos = getRandomSamplePos(x, y);
           samplePos[0] /= heightF;
           samplePos[1] /= widthF;
-          colorSum += screenPosColor(samplePos, scene);
+          auto ray = rayToScreenPos(samplePos);
+          colorSum += rayColor(ray, scene);
         }
         image.setPixel(x, y, colorSum / samplesPerPixel);
-        // image.setPixel(x, y, screenPosColor(getRandomSamplePos(x, y), scene));
       }
 
       omp_set_lock(&lines_rendered_mutex);
@@ -61,8 +62,7 @@ struct Camera {
     return image;
   }
 
-  inline ColorI3 screenPosColor(const float2 &screenPos,
-                                const HittableList &scene) {
+  inline Ray rayToScreenPos(const float2 &screenPos) {
     // screenPos: (0, 1)^2
     // screenPosCentered: (-0.5, 0.5)^2
     float2 screenPosCentered = screenPos - viewportCenter;
@@ -71,9 +71,7 @@ struct Camera {
     // dir coordinates: x: left, y: up, -z: depth
     float4 dir = float4(worldPos.y(), -worldPos.x(), -1, 0);
     // emit a ray from the origin
-    Ray ray{origin, dir};
-
-    return rayColor(ray, scene);
+    return Ray{origin, dir};
   }
 
   inline float2 getRandomSamplePos(int x, int y) {
@@ -84,20 +82,27 @@ struct Camera {
     return screenPos + delta;
   }
 
-  inline ColorI3 rayColor(const Ray &ray, const Hittable &scene) const {
-    // background color (sky color)
-    float blend =
-        0.5 *
-        (static_cast<float3>(ray.direction(0, 1, 2).safeNormalized()).y() +
-         1.0);
-    ColorI3 c = lerp(ColorI3(255, 255, 255), ColorI3(0, 0, 255), blend);
+  inline ColorI3 rayColor(const Ray &ray, const Hittable &scene,
+                          int depth = 0) const {
+    if (depth >= maxDepth)  // exceed the max depth
+      return ColorI3(0, 0, 0);
+      // return ColorI3(100, 100, 100);
+
     // ray trace
-    auto result = scene.hit(ray, Interval(0, INF));
-    result.ok([=, &c](HitRecord hit) {
-      if (hit.frontFace)
-        c = ToColorI3((hit.normal + 1) * 0.5f);
-    });
-    return c;
+    auto result = scene.hit(ray, Interval(1e-3, INF));
+    if (result.success) {
+      auto hit = result.returnVal;
+      // float3 dir = MathUtils::RandomOnHemisphere(hit.normal);
+      float3 dir = hit.normal + MathUtils::RandomInUnitSphere();
+      dir.safeNormalized();
+      return rayColor(Ray{hit.point, dir}, scene, depth + 1) * 0.9;
+    }
+
+    // background color (sky color)
+    float3 rayDirN = ray.direction(0, 1, 2).safeNormalized();
+    float blend = 0.5 * (rayDirN.y() + 1.0);
+    auto color = lerp(ColorF3(1, 1, 1), ColorF3(0.5, 0.7, 1), blend);
+    return ToColorI3(color);
   }
 };
 

@@ -29,6 +29,11 @@ struct Image {
     this->Image::operator()(h, w, 1) = color.y();
     this->Image::operator()(h, w, 2) = color.z();
   }
+
+  inline void linearToGamma() {
+    for (size_t i = 0; i < data.size(); i++) 
+      data[i] = std::pow(data[i] / 255.0f, 1 / 2.2f) * 255;
+  }
   
   inline void writePNG(const char* path) {
     stbi_write_png(path, width, height, channels, data.data(),

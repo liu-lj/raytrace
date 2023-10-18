@@ -15,7 +15,7 @@ struct HitRecord {
 };
 
 struct Hittable {
-  virtual ~Hittable() = default;
+  // virtual ~Hittable() = default;
 
   virtual inline Result<HitRecord> hit(const Ray &ray,
                                        Interval rayTime) const = 0;

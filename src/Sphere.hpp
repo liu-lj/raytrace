@@ -10,6 +10,10 @@ struct Sphere : public Hittable {
   float4 center;
   ColorI4 color;
 
+  Sphere() {}
+  Sphere(float radius, float4 center, ColorI4 color)
+      : radius(radius), center(center), color(color) {}
+
   inline Result<HitRecord> hit(const Ray& ray, float tmin, float tmax) const {
     float3 orig = ray.origin;
     float3 dir = ray.direction;

@@ -212,8 +212,8 @@ struct VectorBase {
   inline decltype(auto) length() const { return sqrt(pow()); }
 
   // 浮点型向量的归一化 (整型向量不支持此操作)
-  template <typename T>
-    requires std::floating_point<T>
+  template <typename U = T>
+    requires std::floating_point<U>
   inline VectorBase<T, n>& normalized() {
     auto len2 = pow();
     if (std::abs(len2 - 1) < 1e-3) return *this;
@@ -223,8 +223,8 @@ struct VectorBase {
   }
 
   // 浮点型向量的安全归一化 (整型向量不支持此操作)
-  template <typename T>
-    requires std::floating_point<T>
+  template <typename U = T>
+    requires std::floating_point<U>
   inline VectorBase<T, n>& safeNormalized() {
     auto len2 = pow();
     if (std::abs(len2 - 1) < 1e-3) return *this;

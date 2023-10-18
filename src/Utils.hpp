@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -34,10 +35,17 @@ struct Result {
   T returnVal;
   Result() : success(false) {}
   Result(T returnVal) : success(true), returnVal(returnVal) {}
-  void ok(std::function<void(T)> func) {
+  inline void ok(std::function<void(T)> func) {
     if (success) func(returnVal);
   }
-  void fail(std::function<void()> func) {
+  inline void fail(std::function<void()> func) {
     if (!success) func();
   }
 };
+
+constexpr const float PI = 3.1415927f;
+constexpr const float INF = std::numeric_limits<float>().infinity();
+
+inline float Deg2Rad(float degrees) {
+  return degrees * PI / 180;
+}

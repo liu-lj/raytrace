@@ -57,19 +57,19 @@ struct VectorBase {
   }
 
   // 带边界检查的下标访问
-  T &operator[](int i) {
+inline  T &operator[](int i) {
     if (i < 0 || i >= n) throw std::out_of_range("Index out of range!");
     return val[i];
   }
 
   // 带边界检查的下标访问
-  const T &operator[](int i) const {
+  inline const T &operator[](int i) const {
     if (i < 0 || i >= n) throw std::out_of_range("Index out of range!");
     return val[i];
   }
 
   template <typename... Ts>
-  auto operator()(Ts... args) const -> VectorBase<T, sizeof...(args)> {
+  inline auto operator()(Ts... args) const -> VectorBase<T, sizeof...(args)> {
     constexpr size_t len = sizeof...(args);
     VectorBase<T, len> res;
     std::initializer_list<size_t> indexs{static_cast<size_t>(args)...};

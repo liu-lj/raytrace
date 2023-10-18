@@ -14,7 +14,8 @@ struct Sphere : public Hittable {
   Sphere(float radius, float4 center, ColorI4 color)
       : radius(radius), center(center), color(color) {}
 
-  inline Result<HitRecord> hit(const Ray& ray, float tmin, float tmax) const override {
+  inline Result<HitRecord> hit(const Ray &ray,
+                               Interval rayTime) const override {
     float3 orig = ray.origin;
     float3 dir = ray.direction;
     float3 dis = center(0, 1, 2) - orig;
@@ -22,28 +23,29 @@ struct Sphere : public Hittable {
     float h = dir.dot(dis);
     float c = dis.pow() - radius * radius;
     float discriminant = h * h - a * c;
-    if (discriminant < 0) return Result<HitRecord>();
+    if (discriminant < 0)
+      return Result<HitRecord>();
 
     float sqrtd = sqrt(discriminant);
     float t1 = (h - sqrtd) / a;
     float time = t1;
-    if (t1 < tmin || t1 > tmax) {
+    if (t1 < rayTime.min || t1 > rayTime.max) {
       // t1 not in range, use t2
       float t2 = (h + sqrtd) / a;
       time = t2;
-      if (t2 < tmin || t2 > tmax)  // t2 not in range
+      if (t2 < rayTime.min || t2 > rayTime.max) // t2 not in range
         return Result<HitRecord>();
     }
 
     float4 point = ray(time);
     float3 normal = (point - center) / radius;
     // normal 和 dir 异向，说明射线从球外部射入，为正面
-    bool isFrontFace = normal.dot(dir) < 0; 
-    return Result<HitRecord>(HitRecord{
-        time,   // ray time
-        point,  // hit point
-        normal,  // normal
-        isFrontFace  // front face
-    });
+    bool isFrontFace = normal.dot(dir) < 0;
+    return HitRecord{
+        time,       // ray time
+        point,      // hit point
+        normal,     // normal
+        isFrontFace // front face
+    };
   }
 };

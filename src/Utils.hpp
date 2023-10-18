@@ -5,9 +5,9 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include <random>
 
-template <typename T0, typename... Ts>
-inline void print(T0 t0, Ts... ts) {
+template <typename T0, typename... Ts> inline void print(T0 t0, Ts... ts) {
   std::cout << t0;
   if constexpr (sizeof...(ts) > 0) {
     std::cout << ' ';
@@ -29,23 +29,32 @@ decltype(auto) lerp(T a, T b, T2 t) {
   return a * (1 - t) + b * t;
 }
 
-template <typename T>
-struct Result {
+template <typename T> T clamp(T x, T min, T max) {
+  return std::min(std::max(x, min), max);
+}
+
+template <typename T> struct Result {
   bool success;
   T returnVal;
   Result() : success(false) {}
   Result(T returnVal) : success(true), returnVal(returnVal) {}
   inline void ok(std::function<void(T)> func) {
-    if (success) func(returnVal);
+    if (success)
+      func(returnVal);
   }
   inline void fail(std::function<void()> func) {
-    if (!success) func();
+    if (!success)
+      func();
   }
 };
 
 constexpr const float PI = 3.1415927f;
 constexpr const float INF = std::numeric_limits<float>().infinity();
 
-inline float Deg2Rad(float degrees) {
-  return degrees * PI / 180;
+inline float Deg2Rad(float degrees) { return degrees * PI / 180; }
+
+inline float RandFloat() {
+  static std::uniform_real_distribution<float> distribution(0.0, 1.0);
+  static std::mt19937 generator;
+  return distribution(generator);
 }

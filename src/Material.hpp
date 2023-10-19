@@ -34,11 +34,17 @@ struct Lambertian : public Material {
 
 struct Metal : public Material {
   ColorF3 albedo;
-  Metal(ColorF3 albedo) : albedo(albedo) {}
+  float fuzz;
+  Metal(ColorF3 albedo, float fuzz)
+      : albedo(albedo), fuzz(std::min(fuzz, 1.0f)) {}
 
   virtual inline Result<ScatteredRay>
   scatter(const Ray &ray, const HitRecord &hit) const override {
     auto reflected = ReflectedVector(ray.direction, hit.normal);
+    reflected += RandomInUnitSphere() * fuzz;
+    if (reflected.dot(hit.normal) <= 0)
+      // absorb the ray
+      return Result<ScatteredRay>();
     Ray scattered = Ray{hit.point, reflected.normalized()};
     return ScatteredRay{scattered, albedo};
   }

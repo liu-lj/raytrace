@@ -102,13 +102,6 @@ struct Camera {
       // not absorbed
       if (matResult.success) {
         auto scatteredRay = matResult.returnVal;
-        // return ColorF3(0, 0, scatteredRay.ray.direction.pow() / 1.1f);
-        // return saturate(scatteredRay.ray.direction);
-        // return abs(scatteredRay.ray.direction);
-        if (depth > 8 && typeid(*hit.material) == typeid(Dielectric)) {
-          return ColorF3(0.1, 0.4, 0.9);
-        }
-
         return scatteredRay.attenuation *
                rayColor(scatteredRay.ray, scene, depth + 1);
       }

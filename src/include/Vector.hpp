@@ -57,7 +57,7 @@ struct VectorBase {
   }
 
   // 带边界检查的下标访问
-inline  T &operator[](int i) {
+  inline T &operator[](int i) {
     if (i < 0 || i >= n) throw std::out_of_range("Index out of range!");
     return val[i];
   }
@@ -221,7 +221,7 @@ inline  T &operator[](int i) {
   // 浮点型向量的归一化 (整型向量不支持此操作)
   template <typename U = T>
     requires std::floating_point<U>
-  inline VectorBase<T, n> &normalized() {
+  inline VectorBase<T, n> &normalize() {
     auto len2 = pow();
     if (std::abs(len2 - 1) < 1e-3) return *this;
     mfloat invLen = 1 / sqrt(len2);
@@ -232,7 +232,7 @@ inline  T &operator[](int i) {
   // 浮点型向量的安全归一化 (整型向量不支持此操作)
   template <typename U = T>
     requires std::floating_point<U>
-  inline VectorBase<T, n> &safeNormalized() {
+  inline VectorBase<T, n> &safeNormalize() {
     auto len2 = pow();
     if (std::abs(len2 - 1) < 1e-3) return *this;
     auto invLen = 1 / std::max(sqrt(len2), static_cast<decltype(len2)>(1e-3));
@@ -326,7 +326,7 @@ inline VectorBase<T, n> safeNormalize(const VectorBase<T, n> &v) {
   return res;
 }
 #pragma endregion
-}  // namespace MathUtils
+}  // namespace VectorDef
 
 using VectorDef::normalize;
 using VectorDef::safeNormalize;
@@ -345,23 +345,28 @@ using VectorDef::float4;
 using VectorDef::int4;
 
 template <typename T, size_t n>
+inline void AssertVectorNormalized(const Vector<T, n> &v) {
+  if (std::abs(v.pow() - 1) < 1e-3) print("Vector not normalized!");
+}
+
+template <typename T, size_t n>
 inline Vector<T, n> abs(const Vector<T, n> &v) {
   Vector<T, n> res;
-  for (size_t i = 0; i < n; i++)
-    res.val[i] = std::abs(v.val[i]);
+  for (size_t i = 0; i < n; i++) res.val[i] = std::abs(v.val[i]);
   return res;
 }
 
 template <typename T, size_t n>
 inline Vector<T, n> clamp(const Vector<T, n> &v, T min, T max) {
   Vector<T, n> res;
-  for (size_t i = 0; i < n; i++)
-    res.val[i] = std::clamp(v.val[i], min, max);
+  for (size_t i = 0; i < n; i++) res.val[i] = std::clamp(v.val[i], min, max);
   return res;
 }
 
 template <typename T, size_t n>
-inline Vector<T, n> saturate(const Vector<T, n> &v) { return clamp(v, 0, 1); }
+inline Vector<T, n> saturate(const Vector<T, n> &v) {
+  return clamp(v, 0, 1);
+}
 
 // extand functions
 inline float3 RandomInUnitSphere() {
@@ -382,16 +387,16 @@ inline float3 RandomOnHemisphere(const float3 &normal) {
     return inUnitSphere * -1;
 }
 
-inline float3 ReflectedVector(const float3 &vec, const float3 &normal) {
-  return safeNormalize(vec - normal * 2 * vec.dot(normal));
+inline float3 ReflectedVector(const float3 &rayIn, const float3 &normal) {
+  return safeNormalize(rayIn - normal * 2 * rayIn.dot(normal));
 }
 
-inline float3 RefractedVector(const float3 &vec,            // 入射向量
-                              const float3 &normal,         // 表面法向量
-                              mfloat relativeRefractiveIndex // 相对折射率
+inline float3 RefractedVector(const float3 &rayIn,            // 入射向量
+                              const float3 &normal,           // 表面法向量
+                              mfloat relativeRefractiveIndex  // 相对折射率
 ) {
-  auto cosTheta = std::min(-vec.dot(normal), mfloat(1));
-  auto refractedPrep = (vec + normal * cosTheta) * relativeRefractiveIndex;
+  auto cosTheta = std::min(-rayIn.dot(normal), mfloat(1));
+  auto refractedPrep = (rayIn + normal * cosTheta) * relativeRefractiveIndex;
   auto refractedPara = normal * -sqrt(fabs(1 - refractedPrep.pow()));
   return safeNormalize(refractedPrep + refractedPara);
 }

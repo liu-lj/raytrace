@@ -41,7 +41,7 @@ struct Camera {
 #pragma omp parallel for num_threads(16)
     for (int x = 0; x < height; x++) {
       for (int y = 0; y < width; y++) {
-        ColorI3 colorSum(0, 0, 0);
+        ColorF3 colorSum(0, 0, 0);
         for (int s = 0; s < samplesPerPixel; s++) {
           auto samplePos = getRandomSamplePos(x, y);
           samplePos[0] /= heightF;
@@ -49,7 +49,8 @@ struct Camera {
           auto ray = rayToScreenPos(samplePos);
           colorSum += rayColor(ray, scene);
         }
-        image.setPixel(x, y, colorSum / samplesPerPixel);
+        colorSum /= samplesPerPixel;
+        image.setPixel(x, y, colorSum);
       }
 
       omp_set_lock(&lines_rendered_mutex);
@@ -84,11 +85,10 @@ struct Camera {
     return screenPos + delta;
   }
 
-  inline ColorI3 rayColor(const Ray &ray, const Hittable &scene,
+  inline ColorF3 rayColor(const Ray &ray, const Hittable &scene,
                           int depth = 0) const {
     if (depth >= maxDepth)  // exceed the max depth
-      return ColorI3(0, 0, 0);
-      // return ColorI3(100, 100, 100);
+      return ColorF3(0, 0, 0);
 
     // ray trace
     auto result = scene.hit(ray, Interval(1e-3, INF));
@@ -103,8 +103,8 @@ struct Camera {
     // background color (sky color)
     float3 rayDirN = ray.direction(0, 1, 2).safeNormalized();
     float blend = 0.5 * (rayDirN.y() + 1.0);
-    auto color = lerp(ColorF3(1, 1, 1), ColorF3(0.5, 0.7, 1), blend);
-    return ToColorI3(color);
+    ColorF3 color = lerp(ColorF3(1, 1, 1), ColorF3(0.5, 0.7, 1), blend);
+    return color;
   }
 };
 

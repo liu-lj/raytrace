@@ -8,6 +8,7 @@
 #include "Color.hpp"
 #include "Ray.hpp"
 #include "Image.hpp"
+#include "Material.hpp"
 
 struct Camera {
   static const float2 viewportCenter;
@@ -94,6 +95,13 @@ struct Camera {
     auto result = scene.hit(ray, Interval(1e-3, INF));
     if (result.success) {
       auto hit = result.returnVal;
+      auto mat = hit.material;
+      auto matResult = mat->scatter(ray, hit);
+      if (matResult.success) {
+        auto scatteredRay = matResult.returnVal;
+        return scatteredRay.attenuation *
+               rayColor(scatteredRay.ray, scene, depth + 1);
+      }
       // float3 dir = RandomOnHemisphere(hit.normal);
       float3 dir = hit.normal + RandomInUnitSphere();
       dir.safeNormalized();

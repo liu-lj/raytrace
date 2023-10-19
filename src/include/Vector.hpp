@@ -362,3 +362,15 @@ inline float3 RandomOnHemisphere(const float3 &normal) {
   else
     return inUnitSphere * -1;
 }
+
+inline float3 ReflectedVector(const float3 &vec, const float3 &normal) {
+  return vec - normal * 2 * vec.dot(normal);
+}
+
+// inline float3 RandomInUnitDisk() {
+//   while (true) {
+//     auto vec = float2::random(-1, 1);
+//     auto pow = vec.pow();
+//     if (pow < 1 && pow > 1e-3) return vec;
+//   }
+// }

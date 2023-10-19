@@ -46,7 +46,7 @@ struct HittableList : public Hittable {
       auto result = object->hit(ray, rayTime);
       if (result.success) {
         record = result;
-        rayTime.max = record.returnVal.rayTime;
+        rayTime.max = record.ret.rayTime;
       }
     }
 

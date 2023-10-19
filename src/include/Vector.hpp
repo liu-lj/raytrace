@@ -264,6 +264,15 @@ struct Vector<T, 3> : public VectorBase<T, 3> {
   using VectorBase<T, 3>::VectorBase;
   Vector(const VectorBase<T, 3> &other) : VectorBase<T, 3>(other) {}
   Vector(VectorBase<T, 3> &&other) : VectorBase<T, 3>(std::move(other)) {}
+
+  inline Vector<T, 3> cross(const Vector<T, 3> &other) {
+    Vector<T, 3> res;
+    res.val[0] = this->val[1] * other.val[2] - this->val[2] * other.val[1];
+    res.val[1] = this->val[2] * other.val[0] - this->val[0] * other.val[2];
+    res.val[2] = this->val[0] * other.val[1] - this->val[1] * other.val[0];
+    return res;
+  }
+
   inline T &x() { return this->val[0]; }
   inline T &y() { return this->val[1]; }
   inline T &z() { return this->val[2]; }

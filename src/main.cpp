@@ -23,7 +23,8 @@ int main(int argc, char **argv) {
   auto matCenter = std::make_shared<Lambertian>(ColorF3(0.1, 0.2, 0.5));
   auto matLeft = std::make_shared<Dielectric>(mfloat(1.5));
   auto matRight = std::make_shared<Metal>(ColorF3(0.8, 0.6, 0.2), mfloat(0));
-  scene.add(std::make_shared<Sphere>(mfloat(100), float3(0, -100.5, -1), matGround));
+  scene.add(
+      std::make_shared<Sphere>(mfloat(100), float3(0, -100.5, -1), matGround));
   scene.add(std::make_shared<Sphere>(mfloat(0.5), float3(0, 0, -1), matCenter));
   // matLeft: 空心玻璃球体
   scene.add(std::make_shared<Sphere>(mfloat(0.5), float3(-1, 0, -1), matLeft));
@@ -31,17 +32,25 @@ int main(int argc, char **argv) {
   scene.add(std::make_shared<Sphere>(mfloat(0.5), float3(1, 0, -1), matRight));
 
   // setup camera
-  Camera camera(width, height, 90);
+  Camera camera{width, height,
+                20,  // Vertical FoV
+                CameraTransform{
+                    float3(-2, 2, 1),  // origin
+                    float3(0, 0, -1),  // lookAt
+                    float3(0, 1, 0)    // up
+                }};
   camera.samplesPerPixel = 100;
   camera.maxDepth = 10;
 
-  // render
-  auto image = camera.render(scene);
-
-  // save image
-  image.linearToGamma();
-  image.writePNG("test.png");
-  print("image saved at", get_dir(argv[0]) + "/test.png");
+  timeTest([&]() -> void {
+    // render
+    auto image = camera.render(scene, false);
+    
+    // save image
+    image.linearToGamma();
+    image.writePNG("test.png");
+    print("image saved at", get_dir(argv[0]) + "/test.png");
+  });
 
   return 0;
 }

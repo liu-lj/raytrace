@@ -43,8 +43,7 @@ struct Metal : public Material {
     auto reflected = ReflectedVector(ray.direction, hit.normal);
     reflected += RandomInUnitSphere() * fuzz;
     if (reflected.dot(hit.normal) <= 0)
-      // absorb the ray
-      return false;
+      return {}; // absorb the ray
     Ray scattered = Ray{hit.point, reflected.normalize()};
     return ScatteredRay{scattered, albedo};
   }

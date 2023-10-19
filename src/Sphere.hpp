@@ -26,7 +26,7 @@ struct Sphere : public Hittable {
     mfloat h = dir.dot(dis);
     mfloat c = dis.pow() - radius * radius;
     mfloat discriminant = h * h - a * c;
-    if (discriminant < 0) return false;
+    if (discriminant < 0) return {};
 
     mfloat sqrtd = sqrt(discriminant);
     mfloat t1 = (h - sqrtd) / a;
@@ -36,7 +36,7 @@ struct Sphere : public Hittable {
       mfloat t2 = (h + sqrtd) / a;
       time = t2;
       if (t2 < rayTime.min || t2 > rayTime.max)  // t2 not in range
-        return false;
+        return {};
     }
 
     float3 point = ray(time);

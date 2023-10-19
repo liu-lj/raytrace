@@ -18,13 +18,27 @@ struct CameraTransform {
   // basis vectors of camera coordinate system
   float3 i, j, k;
   CameraTransform() : origin(0, 0, 0), lookAt(0, 0, -1), up(0, 1, 0) {
-    update();
+    updateVectors();
   }
   CameraTransform(float3 origin, float3 lookAt, float3 up)
       : origin(origin), lookAt(lookAt), up(up) {
-    update();
+    updateVectors();
   }
-  inline void update() {}
+  inline void updateVectors() {
+    // auto focal_length = (lookfrom - lookat).length();
+    // // Calculate the u,v,w unit basis vectors for the camera coordinate
+    // frame.
+    // w = unit_vector(lookfrom - lookat); u = unit_vector(cross(vup,
+    // w)); v = cross(w, u); vec3 viewport_u =
+    //     viewport_width * u;  // Vector across viewport horizontal edge
+    // vec3 viewport_v =
+    //     viewport_height * -v;  // Vector down viewport vertical edge
+    // auto viewport_upper_left =
+    //     center - (focal_length * w) - viewport_u / 2 - viewport_v / 2;
+    k = normalize(origin - lookAt);
+    i = normalize(up.cross(k));
+    j = k.cross(i);
+  }
 };
 
 struct Camera {
@@ -50,19 +64,22 @@ struct Camera {
     widthF = width;
     heightF = height;
     aspectRatio = widthF / heightF;
+    auto focalLength = (camTrans.origin - camTrans.lookAt).length();
     auto theta = Deg2Rad(VFoV);
     auto h = tan(theta / 2);
-    viewportHeight = 2 * h;
+    viewportHeight = 2 * h * focalLength;
     viewportWidth = viewportHeight * widthF / heightF;
     viewportSize = float2(viewportHeight, viewportWidth);
+    float3 viewportU = camTrans.i * viewportWidth;
+    float3 viewportV = camTrans.j * viewportHeight;
   }
 
-  inline Image render(const HittableList &scene) {
+  inline Image render(const HittableList &scene, bool printLog = true) {
     Image image(height, width, 3);
 
     int lines_rendered = 0;
     omp_lock_t lines_rendered_mutex;
-    omp_init_lock(&lines_rendered_mutex);
+    if (printLog) omp_init_lock(&lines_rendered_mutex);
 
 #pragma omp parallel for num_threads(16)
     for (int x = 0; x < height; x++) {
@@ -79,14 +96,18 @@ struct Camera {
         image.setPixel(x, y, colorSum);
       }
 
-      omp_set_lock(&lines_rendered_mutex);
-      lines_rendered++;
-      print("Lines rendered:", lines_rendered, "/", height);
-      omp_unset_lock(&lines_rendered_mutex);
+      if (printLog) {
+        omp_set_lock(&lines_rendered_mutex);
+        lines_rendered++;
+        print("Lines rendered:", lines_rendered, "/", height);
+        omp_unset_lock(&lines_rendered_mutex);
+      }
     }
 
-    print("all lines rendered.");
-    omp_destroy_lock(&lines_rendered_mutex);
+    if (printLog) {
+      print("all lines rendered.");
+      omp_destroy_lock(&lines_rendered_mutex);
+    }
 
     return image;
   }
@@ -98,7 +119,10 @@ struct Camera {
     // a viewport plane at z = -1
     float2 worldPos = viewportSize * screenPosCentered;
     // dir coordinates: x: left, y: up, -z: depth
-    float3 dir = float3(worldPos.y(), -worldPos.x(), -1);
+    // float3 dir = float3(worldPos.y(), -worldPos.x(), -1);
+    float3 dir = camTrans.i * worldPos.y() +   // right
+                 camTrans.j * -worldPos.x() +  // up
+                 camTrans.k * -1;              // depth
     // emit a ray from the origin
     return Ray{camTrans.origin, normalize(dir)};
   }
@@ -121,12 +145,12 @@ struct Camera {
 
     // hitted an object
     if (result.success) {
-      auto hit = result.returnVal;
+      auto hit = result.ret;
 
       auto matResult = hit.material->scatter(ray, hit);
       // not absorbed
       if (matResult.success) {
-        auto scatteredRay = matResult.returnVal;
+        auto scatteredRay = matResult.ret;
         return scatteredRay.attenuation *
                rayColor(scatteredRay.ray, scene, depth + 1);
       }

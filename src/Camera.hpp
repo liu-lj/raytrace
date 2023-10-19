@@ -18,9 +18,9 @@ struct Camera {
   int maxDepth = 10;
 
   int width, height;
-  float widthF, heightF;
-  float aspectRatio;
-  float viewportHeight, viewportWidth;
+  mfloat widthF, heightF;
+  mfloat aspectRatio;
+  mfloat viewportHeight, viewportWidth;
   float2 viewportSize;
 
   Camera(int width, int height) : width(width), height(height) {
@@ -88,7 +88,7 @@ struct Camera {
 
   inline ColorF3 rayColor(const Ray &ray, const Hittable &scene,
                           int depth = 0) const {
-    if (depth >= maxDepth) // exceed the max depth
+    if (depth >= maxDepth)  // exceed the max depth
       return ColorF3(0, 0, 0);
 
     // ray trace
@@ -105,6 +105,10 @@ struct Camera {
         // return ColorF3(0, 0, scatteredRay.ray.direction.pow() / 1.1f);
         // return saturate(scatteredRay.ray.direction);
         // return abs(scatteredRay.ray.direction);
+        if (depth > 8 && typeid(*hit.material) == typeid(Dielectric)) {
+          return ColorF3(0.1, 0.4, 0.9);
+        }
+
         return scatteredRay.attenuation *
                rayColor(scatteredRay.ray, scene, depth + 1);
       }
@@ -114,7 +118,7 @@ struct Camera {
 
     // background color (sky color)
     float3 rayDirN = safeNormalize(ray.direction);
-    float blend = 0.5 * (rayDirN.y() + 1.0);
+    mfloat blend = 0.5 * (rayDirN.y() + 1.0);
     ColorF3 color = lerp(ColorF3(1, 1, 1), ColorF3(0.5, 0.7, 1), blend);
     return color;
   }

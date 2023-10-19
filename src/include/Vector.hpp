@@ -224,7 +224,7 @@ inline  T &operator[](int i) {
   inline VectorBase<T, n> &normalized() {
     auto len2 = pow();
     if (std::abs(len2 - 1) < 1e-3) return *this;
-    float invLen = 1 / sqrt(len2);
+    mfloat invLen = 1 / sqrt(len2);
     for (size_t i = 0; i < n; i++) val[i] *= invLen;
     return *this;
   }
@@ -290,15 +290,15 @@ struct Vector<T, 4> : public VectorBase<T, 4> {
 
 #pragma region Type aliases
 using int2 = Vector<int, 2>;
-using float2 = Vector<float, 2>;
+using float2 = Vector<mfloat, 2>;
 using double2 = Vector<double, 2>;
 
 using int3 = Vector<int, 3>;
-using float3 = Vector<float, 3>;
+using float3 = Vector<mfloat, 3>;
 using double3 = Vector<double, 3>;
 
 using int4 = Vector<int, 4>;
-using float4 = Vector<float, 4>;
+using float4 = Vector<mfloat, 4>;
 #pragma endregion
 
 #pragma region Non-member functions
@@ -388,9 +388,9 @@ inline float3 ReflectedVector(const float3 &vec, const float3 &normal) {
 
 inline float3 RefractedVector(const float3 &vec,            // 入射向量
                               const float3 &normal,         // 表面法向量
-                              float relativeRefractiveIndex // 相对折射率
+                              mfloat relativeRefractiveIndex // 相对折射率
 ) {
-  auto cosTheta = std::min(-vec.dot(normal), 1.0f);
+  auto cosTheta = std::min(-vec.dot(normal), mfloat(1));
   auto refractedPrep = (vec + normal * cosTheta) * relativeRefractiveIndex;
   auto refractedPara = normal * -sqrt(fabs(1 - refractedPrep.pow()));
   return safeNormalize(refractedPrep + refractedPara);

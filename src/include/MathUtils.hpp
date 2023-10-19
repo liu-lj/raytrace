@@ -4,8 +4,8 @@
 #include <limits>
 #include <algorithm>
 
-constexpr const float PI = 3.1415927f;
-constexpr const float INF = std::numeric_limits<float>().infinity();
+constexpr const mfloat PI = 3.1415927f;
+constexpr const mfloat INF = std::numeric_limits<mfloat>().infinity();
 
 template <typename T, typename T2>
   requires std::is_arithmetic_v<T2>
@@ -22,18 +22,18 @@ using std::clamp;
 template <typename T>
 inline T saturate(T x) { return clamp(x, 0, 1); }
 
-inline float Deg2Rad(float degrees) { return degrees * PI / 180; }
+inline mfloat Deg2Rad(mfloat degrees) { return degrees * PI / 180; }
 
 // rand float in [0, 1)
-inline float RandFloat() {
-  static std::uniform_real_distribution<float> distribution(0, 1);
+inline mfloat RandFloat() {
+  static std::uniform_real_distribution<mfloat> distribution(0, 1);
   static std::mt19937 generator;
   return distribution(generator);
 }
 
 // rand float in [min, max)
-inline float RandFloat(float min, float max) {
-  std::uniform_real_distribution<float> distribution(min, max);
+inline mfloat RandFloat(mfloat min, mfloat max) {
+  std::uniform_real_distribution<mfloat> distribution(min, max);
   static std::mt19937 generator;
   return distribution(generator);
 }

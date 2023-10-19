@@ -34,9 +34,9 @@ struct Lambertian : public Material {
 
 struct Metal : public Material {
   ColorF3 albedo;
-  float fuzz;
-  Metal(ColorF3 albedo, float fuzz)
-      : albedo(albedo), fuzz(std::min(fuzz, 1.0f)) {}
+  mfloat fuzz;
+  Metal(ColorF3 albedo, mfloat fuzz)
+      : albedo(albedo), fuzz(std::min(fuzz, mfloat(1))) {}
 
   virtual inline Result<ScatteredRay>
   scatter(const Ray &ray, const HitRecord &hit) const override {
@@ -52,8 +52,8 @@ struct Metal : public Material {
 
 // 电介质
 struct Dielectric : public Material {
-  float refractiveIndex;
-  Dielectric(float refractiveIndex) : refractiveIndex(refractiveIndex) {}
+  mfloat refractiveIndex;
+  Dielectric(mfloat refractiveIndex) : refractiveIndex(refractiveIndex) {}
 
   virtual inline Result<ScatteredRay>
   scatter(const Ray &ray, const HitRecord &hit) const override {

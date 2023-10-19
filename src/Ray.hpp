@@ -5,6 +5,6 @@
 struct Ray {
   float3 origin, direction;
 
-  inline float3 at(float t) const { return origin + direction * t; }
-  inline float3 operator()(float t) const { return at(t); }
+  inline float3 at(mfloat t) const { return origin + direction * t; }
+  inline float3 operator()(mfloat t) const { return at(t); }
 };

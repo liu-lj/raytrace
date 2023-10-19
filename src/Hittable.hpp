@@ -12,7 +12,7 @@
 struct Material;
 
 struct HitRecord {
-  float rayTime;
+  mfloat rayTime;
   float3 point;
   float3 normal;
   bool frontFace;

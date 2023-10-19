@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
   scene.add(std::make_shared<Sphere>(mfloat(0.5), float3(1, 0, -1), matRight));
 
   // setup camera
-  Camera camera(width, height);
+  Camera camera(width, height, 90);
   camera.samplesPerPixel = 100;
   camera.maxDepth = 10;
 

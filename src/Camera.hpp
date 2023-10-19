@@ -10,9 +10,30 @@
 #include "Image.hpp"
 #include "Material.hpp"
 
+struct CameraTransform {
+  float3 origin;
+  float3 lookAt;
+  float3 up;
+
+  // basis vectors of camera coordinate system
+  float3 i, j, k;
+  CameraTransform() : origin(0, 0, 0), lookAt(0, 0, -1), up(0, 1, 0) {
+    update();
+  }
+  CameraTransform(float3 origin, float3 lookAt, float3 up)
+      : origin(origin), lookAt(lookAt), up(up) {
+    update();
+  }
+  inline void update() {}
+};
+
 struct Camera {
   static const float2 viewportCenter;
-  static const float3 origin;
+
+  // float3 origin = float3(0, 0, 0);
+  // float3 lookAt = float3(0, 0, -1);
+  // float3 up = float3(0, 1, 0);
+  CameraTransform camTrans;
 
   int samplesPerPixel = 4;
   int maxDepth = 10;
@@ -20,14 +41,18 @@ struct Camera {
   int width, height;
   mfloat widthF, heightF;
   mfloat aspectRatio;
+  mfloat VFoV;
   mfloat viewportHeight, viewportWidth;
   float2 viewportSize;
 
-  Camera(int width, int height) : width(width), height(height) {
+  Camera(int width, int height, mfloat VFoV, CameraTransform camTrans = {})
+      : width(width), height(height), VFoV(VFoV), camTrans(camTrans) {
     widthF = width;
     heightF = height;
     aspectRatio = widthF / heightF;
-    viewportHeight = 2;
+    auto theta = Deg2Rad(VFoV);
+    auto h = tan(theta / 2);
+    viewportHeight = 2 * h;
     viewportWidth = viewportHeight * widthF / heightF;
     viewportSize = float2(viewportHeight, viewportWidth);
   }
@@ -75,7 +100,7 @@ struct Camera {
     // dir coordinates: x: left, y: up, -z: depth
     float3 dir = float3(worldPos.y(), -worldPos.x(), -1);
     // emit a ray from the origin
-    return Ray{origin, normalize(dir)};
+    return Ray{camTrans.origin, normalize(dir)};
   }
 
   inline float2 getRandomSamplePos(int x, int y) {
@@ -118,4 +143,3 @@ struct Camera {
 };
 
 const float2 Camera::viewportCenter = float2(0.5, 0.5);
-const float3 Camera::origin = float3(0, 0, 0);

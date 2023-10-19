@@ -166,6 +166,15 @@ struct VectorBase {
     return res;
   }
 
+  // divide by a vector element-wise
+  template <typename T2>
+  inline auto operator/(const VectorBase<T2, n> &x) const
+      -> VectorBase<decltype(std::declval<T>() / std::declval<T2>()), n> {
+    VectorBase<decltype(std::declval<T>() / std::declval<T2>()), n> res;
+    for (size_t i = 0; i < n; i++) res.val[i] = val[i] / x.val[i];
+    return res;
+  }
+
   template <typename T2>
     requires std::is_arithmetic_v<T2>
   inline VectorBase<T, n> &operator+=(T2 x) {

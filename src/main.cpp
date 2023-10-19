@@ -33,13 +33,13 @@ int main(int argc, char **argv) {
 
   // setup camera
   Camera camera{width, height,
-                20,  // Vertical FoV
+                90,  // Vertical FoV
                 CameraTransform{
                     float3(-2, 2, 1),  // origin
                     float3(0, 0, -1),  // lookAt
                     float3(0, 1, 0)    // up
                 }};
-  camera.samplesPerPixel = 100;
+  camera.samplesPerPixel = 10;
   camera.maxDepth = 10;
 
   timeTest([&]() -> void {

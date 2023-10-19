@@ -11,30 +11,22 @@
 #include "Material.hpp"
 
 struct CameraTransform {
-  float3 origin;
-  float3 lookAt;
-  float3 up;
+  float3 origin, lookAt, up;
 
   // basis vectors of camera coordinate system
   float3 i, j, k;
+
+  // default coordinate system: i=right, j=up, -k=depth
   CameraTransform() : origin(0, 0, 0), lookAt(0, 0, -1), up(0, 1, 0) {
     updateVectors();
   }
+
   CameraTransform(float3 origin, float3 lookAt, float3 up)
       : origin(origin), lookAt(lookAt), up(up) {
     updateVectors();
   }
+
   inline void updateVectors() {
-    // auto focal_length = (lookfrom - lookat).length();
-    // // Calculate the u,v,w unit basis vectors for the camera coordinate
-    // frame.
-    // w = unit_vector(lookfrom - lookat); u = unit_vector(cross(vup,
-    // w)); v = cross(w, u); vec3 viewport_u =
-    //     viewport_width * u;  // Vector across viewport horizontal edge
-    // vec3 viewport_v =
-    //     viewport_height * -v;  // Vector down viewport vertical edge
-    // auto viewport_upper_left =
-    //     center - (focal_length * w) - viewport_u / 2 - viewport_v / 2;
     k = normalize(origin - lookAt);
     i = normalize(up.cross(k));
     j = k.cross(i);
@@ -42,36 +34,41 @@ struct CameraTransform {
 };
 
 struct Camera {
-  static const float2 viewportCenter;
-
-  // float3 origin = float3(0, 0, 0);
-  // float3 lookAt = float3(0, 0, -1);
-  // float3 up = float3(0, 1, 0);
-  CameraTransform camTrans;
-
+  // renderer settings
   int samplesPerPixel = 4;
   int maxDepth = 10;
 
+  // camera settings
   int width, height;
-  mfloat widthF, heightF;
-  mfloat aspectRatio;
   mfloat VFoV;
+  CameraTransform camTrans;
+
+  mfloat widthF, heightF;
+  float2 screenSize;
+  mfloat aspectRatio;
   mfloat viewportHeight, viewportWidth;
   float2 viewportSize;
+  float2 viewportCenter;
 
   Camera(int width, int height, mfloat VFoV, CameraTransform camTrans = {})
-      : width(width), height(height), VFoV(VFoV), camTrans(camTrans) {
-    widthF = width;
-    heightF = height;
+      : width(width),
+        height(height),
+        widthF(width),
+        heightF(height),
+        screenSize(height, width),
+        VFoV(VFoV),
+        camTrans(camTrans) {
     aspectRatio = widthF / heightF;
     auto focalLength = (camTrans.origin - camTrans.lookAt).length();
     auto theta = Deg2Rad(VFoV);
     auto h = tan(theta / 2);
-    viewportHeight = 2 * h * focalLength;
+    viewportHeight = 2 * h;
+    // viewportHeight = 2 * h * focalLength;
     viewportWidth = viewportHeight * widthF / heightF;
     viewportSize = float2(viewportHeight, viewportWidth);
     float3 viewportU = camTrans.i * viewportWidth;
     float3 viewportV = camTrans.j * viewportHeight;
+    viewportCenter = float2(0.5, 0.5);
   }
 
   inline Image render(const HittableList &scene, bool printLog = true) {
@@ -87,9 +84,7 @@ struct Camera {
         ColorF3 colorSum(0, 0, 0);
         for (int s = 0; s < samplesPerPixel; s++) {
           auto samplePos = getRandomSamplePos(x, y);
-          samplePos[0] /= heightF;
-          samplePos[1] /= widthF;
-          auto ray = rayToScreenPos(samplePos);
+          auto ray = rayToScreenPos(samplePos / screenSize);
           colorSum += rayColor(ray, scene);
         }
         colorSum /= samplesPerPixel;
@@ -118,8 +113,6 @@ struct Camera {
     float2 screenPosCentered = screenPos - viewportCenter;
     // a viewport plane at z = -1
     float2 worldPos = viewportSize * screenPosCentered;
-    // dir coordinates: x: left, y: up, -z: depth
-    // float3 dir = float3(worldPos.y(), -worldPos.x(), -1);
     float3 dir = camTrans.i * worldPos.y() +   // right
                  camTrans.j * -worldPos.x() +  // up
                  camTrans.k * -1;              // depth
@@ -165,5 +158,3 @@ struct Camera {
     return color;
   }
 };
-
-const float2 Camera::viewportCenter = float2(0.5, 0.5);

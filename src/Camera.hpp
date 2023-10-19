@@ -12,7 +12,7 @@
 
 struct Camera {
   static const float2 viewportCenter;
-  static const float4 origin;
+  static const float3 origin;
 
   int samplesPerPixel = 4;
   int maxDepth = 10;
@@ -73,9 +73,9 @@ struct Camera {
     // a viewport plane at z = -1
     float2 worldPos = viewportSize * screenPosCentered;
     // dir coordinates: x: left, y: up, -z: depth
-    float4 dir = float4(worldPos.y(), -worldPos.x(), -1, 0);
+    float3 dir = float3(worldPos.y(), -worldPos.x(), -1);
     // emit a ray from the origin
-    return Ray{origin, dir};
+    return Ray{origin, normalize(dir)};
   }
 
   inline float2 getRandomSamplePos(int x, int y) {
@@ -88,28 +88,32 @@ struct Camera {
 
   inline ColorF3 rayColor(const Ray &ray, const Hittable &scene,
                           int depth = 0) const {
-    if (depth >= maxDepth)  // exceed the max depth
+    if (depth >= maxDepth) // exceed the max depth
       return ColorF3(0, 0, 0);
 
     // ray trace
     auto result = scene.hit(ray, Interval(1e-3, INF));
+
+    // hitted an object
     if (result.success) {
       auto hit = result.returnVal;
-      auto mat = hit.material;
-      auto matResult = mat->scatter(ray, hit);
+
+      auto matResult = hit.material->scatter(ray, hit);
+      // not absorbed
       if (matResult.success) {
         auto scatteredRay = matResult.returnVal;
+        // return ColorF3(0, 0, scatteredRay.ray.direction.pow() / 1.1f);
+        // return saturate(scatteredRay.ray.direction);
+        // return abs(scatteredRay.ray.direction);
         return scatteredRay.attenuation *
                rayColor(scatteredRay.ray, scene, depth + 1);
       }
-      // float3 dir = RandomOnHemisphere(hit.normal);
-      float3 dir = hit.normal + RandomInUnitSphere();
-      dir.safeNormalized();
-      return rayColor(Ray{hit.point, dir}, scene, depth + 1) * 0.9;
+      // absorbed
+      return ColorF3(0, 0, 0);
     }
 
     // background color (sky color)
-    float3 rayDirN = ray.direction(0, 1, 2).safeNormalized();
+    float3 rayDirN = safeNormalize(ray.direction);
     float blend = 0.5 * (rayDirN.y() + 1.0);
     ColorF3 color = lerp(ColorF3(1, 1, 1), ColorF3(0.5, 0.7, 1), blend);
     return color;
@@ -117,4 +121,4 @@ struct Camera {
 };
 
 const float2 Camera::viewportCenter = float2(0.5, 0.5);
-const float4 Camera::origin = float4(0, 0, 0, 1);
+const float3 Camera::origin = float3(0, 0, 0);

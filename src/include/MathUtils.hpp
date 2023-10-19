@@ -13,10 +13,14 @@ inline decltype(auto) lerp(T a, T b, T2 t) {
   return a * (1 - t) + b * t;
 }
 
+using std::clamp;
+// template <typename T>
+// inline T clamp(T x, T min, T max) {
+//   return std::min(std::max(x, min), max);
+// }
+
 template <typename T>
-inline T clamp(T x, T min, T max) {
-  return std::min(std::max(x, min), max);
-}
+inline T saturate(T x) { return clamp(x, 0, 1); }
 
 inline float Deg2Rad(float degrees) { return degrees * PI / 180; }
 

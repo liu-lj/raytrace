@@ -49,3 +49,19 @@ struct Metal : public Material {
     return ScatteredRay{scattered, albedo};
   }
 };
+
+// 电介质
+struct Dielectric : public Material {
+  float refractiveIndex;
+  Dielectric(float refractiveIndex) : refractiveIndex(refractiveIndex) {}
+
+  virtual inline Result<ScatteredRay>
+  scatter(const Ray &ray, const HitRecord &hit) const override {
+    auto relativeRefractiveIndex =
+        hit.frontFace ? (1 / refractiveIndex) : refractiveIndex;
+    auto refracted = RefractedVector(normalize(ray.direction), hit.normal,
+                                     relativeRefractiveIndex);
+    Ray scattered = Ray{hit.point, normalize(refracted)};
+    return ScatteredRay{scattered, ColorF3(1, 1, 1)};
+  }
+};

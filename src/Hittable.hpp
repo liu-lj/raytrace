@@ -13,7 +13,7 @@ struct Material;
 
 struct HitRecord {
   float rayTime;
-  float4 point;
+  float3 point;
   float3 normal;
   bool frontFace;
   std::shared_ptr<Material> material;

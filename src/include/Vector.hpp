@@ -344,6 +344,25 @@ using VectorDef::int3;
 using VectorDef::float4;
 using VectorDef::int4;
 
+template <typename T, size_t n>
+inline Vector<T, n> abs(const Vector<T, n> &v) {
+  Vector<T, n> res;
+  for (size_t i = 0; i < n; i++)
+    res.val[i] = std::abs(v.val[i]);
+  return res;
+}
+
+template <typename T, size_t n>
+inline Vector<T, n> clamp(const Vector<T, n> &v, T min, T max) {
+  Vector<T, n> res;
+  for (size_t i = 0; i < n; i++)
+    res.val[i] = std::clamp(v.val[i], min, max);
+  return res;
+}
+
+template <typename T, size_t n>
+inline Vector<T, n> saturate(const Vector<T, n> &v) { return clamp(v, 0, 1); }
+
 // extand functions
 inline float3 RandomInUnitSphere() {
   while (true) {
@@ -364,13 +383,15 @@ inline float3 RandomOnHemisphere(const float3 &normal) {
 }
 
 inline float3 ReflectedVector(const float3 &vec, const float3 &normal) {
-  return vec - normal * 2 * vec.dot(normal);
+  return safeNormalize(vec - normal * 2 * vec.dot(normal));
 }
 
-// inline float3 RandomInUnitDisk() {
-//   while (true) {
-//     auto vec = float2::random(-1, 1);
-//     auto pow = vec.pow();
-//     if (pow < 1 && pow > 1e-3) return vec;
-//   }
-// }
+inline float3 RefractedVector(const float3 &vec,            // 入射向量
+                              const float3 &normal,         // 表面法向量
+                              float relativeRefractiveIndex // 相对折射率
+) {
+  auto cosTheta = std::min(-vec.dot(normal), 1.0f);
+  auto refractedPrep = (vec + normal * cosTheta) * relativeRefractiveIndex;
+  auto refractedPara = normal * -sqrt(fabs(1 - refractedPrep.pow()));
+  return safeNormalize(refractedPrep + refractedPara);
+}

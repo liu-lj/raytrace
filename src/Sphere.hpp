@@ -10,18 +10,18 @@
 
 struct Sphere : public Hittable {
   float radius;
-  float4 center;
+  float3 center;
   std::shared_ptr<Material> material;
 
   Sphere() {}
-  Sphere(float radius, float4 center, std::shared_ptr<Material> material)
+  Sphere(float radius, float3 center, std::shared_ptr<Material> material)
       : radius(radius), center(center), material(material) {}
 
   inline Result<HitRecord> hit(const Ray &ray,
                                Interval rayTime) const override {
     float3 orig = ray.origin;
     float3 dir = ray.direction;
-    float3 dis = center(0, 1, 2) - orig;
+    float3 dis = center - orig;
     float a = dir.dot(dir);
     float h = dir.dot(dis);
     float c = dis.pow() - radius * radius;
@@ -39,7 +39,7 @@ struct Sphere : public Hittable {
         return Result<HitRecord>();
     }
 
-    float4 point = ray(time);
+    float3 point = ray(time);
     float3 normal = (point - center) / radius;
     // normal 和 dir 异向，说明射线从球外部射入，为正面
     bool isFrontFace = normal.dot(dir) < 0;

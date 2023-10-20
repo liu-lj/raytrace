@@ -31,7 +31,7 @@ struct Image {
   }
 
   inline void setPixel(size_t h, size_t w, ColorF3 color) {
-    setPixel(h, w, ToColorI3(color));
+    setPixel(h, w, ToColorI3(saturate(color)));
   }
 
   inline void linearToGamma() {

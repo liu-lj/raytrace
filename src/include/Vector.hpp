@@ -383,7 +383,7 @@ inline Vector<T, n> clamp(const Vector<T, n> &v, T min, T max) {
 
 template <typename T, size_t n>
 inline Vector<T, n> saturate(const Vector<T, n> &v) {
-  return clamp(v, 0, 1);
+  return clamp<T, n>(v, 0, 1);
 }
 
 // extand functions
@@ -403,6 +403,14 @@ inline float3 RandomOnHemisphere(const float3 &normal) {
     return inUnitSphere;
   else
     return inUnitSphere * -1;
+}
+
+inline float2 RandomInUnitDisk() {
+  while (true) {
+    float2 vec(RandFloat(-1, 1), RandFloat(-1, 1));
+    auto pow = vec.pow();
+    if (pow <= 1) return vec;
+  }
 }
 
 inline float3 ReflectedVector(const float3 &rayIn, const float3 &normal) {

@@ -15,6 +15,7 @@ struct CameraTransform {
 
   // basis vectors of camera coordinate system
   float3 i, j, k;
+  mfloat focalLength;
 
   // default coordinate system: i=right, j=up, -k=depth
   CameraTransform() : origin(0, 0, 0), lookAt(0, 0, -1), up(0, 1, 0) {
@@ -27,9 +28,38 @@ struct CameraTransform {
   }
 
   inline void updateVectors() {
-    k = normalize(origin - lookAt);
+    float3 look = origin - lookAt;
+    focalLength = look.length();
+    k = normalize(look);
     i = normalize(up.cross(k));
     j = k.cross(i);
+  }
+};
+
+struct DefocusDisk {
+  mfloat angle, foucsDist, imageDist;
+  CameraTransform camTrans;
+  float3 origin;
+  float3 i, j, k;
+  mfloat radius;
+  DefocusDisk() : angle(0) {}
+  DefocusDisk(mfloat angle, mfloat foucsDist, mfloat imageDist,
+              CameraTransform camTrans)
+      : angle(angle),
+        foucsDist(foucsDist),
+        imageDist(imageDist),
+        camTrans(camTrans) {
+    i = camTrans.i;
+    j = camTrans.j;
+    k = camTrans.k * imageDist;
+    origin = camTrans.origin + k;
+    radius = tan(Deg2Rad(angle / 2)) * foucsDist / 2;
+  }
+  Ray randomRayToWorldPos(float3 pos) const {
+    float2 randPos = RandomInUnitDisk() * radius;
+    float3 originNew = origin + i * randPos.x() + j * randPos.y();
+    float3 dir = pos - originNew;
+    return {originNew, normalize(dir)};
   }
 };
 
@@ -42,33 +72,32 @@ struct Camera {
   int width, height;
   mfloat VFoV;
   CameraTransform camTrans;
+  DefocusDisk ddisk;
 
   mfloat widthF, heightF;
   float2 screenSize;
   mfloat aspectRatio;
   mfloat viewportHeight, viewportWidth;
   float2 viewportSize;
-  float2 viewportCenter;
 
-  Camera(int width, int height, mfloat VFoV, CameraTransform camTrans = {})
+  static const float2 viewportCenter;
+
+  Camera(int width, int height, mfloat VFoV, CameraTransform camTrans = {},
+         DefocusDisk ddisk = {})
       : width(width),
         height(height),
         widthF(width),
         heightF(height),
         screenSize(height, width),
         VFoV(VFoV),
-        camTrans(camTrans) {
+        camTrans(camTrans),
+        ddisk(ddisk) {
     aspectRatio = widthF / heightF;
-    auto focalLength = (camTrans.origin - camTrans.lookAt).length();
     auto theta = Deg2Rad(VFoV);
     auto h = tan(theta / 2);
     viewportHeight = 2 * h;
-    // viewportHeight = 2 * h * focalLength;
     viewportWidth = viewportHeight * widthF / heightF;
     viewportSize = float2(viewportHeight, viewportWidth);
-    float3 viewportU = camTrans.i * viewportWidth;
-    float3 viewportV = camTrans.j * viewportHeight;
-    viewportCenter = float2(0.5, 0.5);
   }
 
   inline Image render(const HittableList &scene, bool printLog = true) {
@@ -85,6 +114,14 @@ struct Camera {
         for (int s = 0; s < samplesPerPixel; s++) {
           auto samplePos = getRandomSamplePos(x, y);
           auto ray = rayToScreenPos(samplePos / screenSize);
+
+          // colorSum = abs(ColorF3(ray.origin / 100 * 10));
+          // colorSum = abs(ColorF3(ray.origin / 100));
+          // colorSum = saturate(ray.direction);
+          // colorSum = ray.direction;
+          // colorSum *= samplesPerPixel;
+          // break;
+
           colorSum += rayColor(ray, scene);
         }
         colorSum /= samplesPerPixel;
@@ -116,6 +153,13 @@ struct Camera {
     float3 dir = camTrans.i * worldPos.y() +   // right
                  camTrans.j * -worldPos.x() +  // up
                  camTrans.k * -1;              // depth
+    if (ddisk.angle > 0) {
+      worldPos = camTrans.origin + dir * ddisk.foucsDist;
+      // auto ray1 = ddisk.randomRayToWorldPos(worldPos);
+      // auto diff = camTrans.origin - ray1.origin;
+      // return {diff, diff};
+      return ddisk.randomRayToWorldPos(worldPos);
+    }
     // emit a ray from the origin
     return Ray{camTrans.origin, normalize(dir)};
   }
@@ -158,3 +202,5 @@ struct Camera {
     return color;
   }
 };
+
+const float2 Camera::viewportCenter = float2(0.5, 0.5);

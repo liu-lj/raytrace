@@ -2,6 +2,7 @@
 
 ## 介绍
 我的 Ray Tracing in One Weekend 实现
+![结果](2_10_0.1.png)
 
 ## 使用说明
 

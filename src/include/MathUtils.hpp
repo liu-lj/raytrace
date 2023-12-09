@@ -9,18 +9,16 @@ constexpr const mfloat INF = std::numeric_limits<mfloat>().infinity();
 
 template <typename T, typename T2>
   requires std::is_arithmetic_v<T2>
-inline decltype(auto) lerp(T a, T b, T2 t) {
+decltype(auto) lerp(T a, T b, T2 t) {
   return a * (1 - t) + b * t;
 }
 
 using std::clamp;
-// template <typename T>
-// inline T clamp(T x, T min, T max) {
-//   return std::min(std::max(x, min), max);
-// }
 
 template <typename T>
-inline T saturate(T x) { return clamp(x, 0, 1); }
+T saturate(T x) {
+  return clamp(x, 0, 1);
+}
 
 inline mfloat Deg2Rad(mfloat degrees) { return degrees * PI / 180; }
 

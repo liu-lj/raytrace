@@ -15,16 +15,16 @@ struct Material {
   ColorF3 color;
   Material() {}
   Material(ColorF3 color) : color(color) {}
-  virtual inline Result<ScatteredRay> scatter(const Ray& ray,
-                                              const HitRecord& hit) const = 0;
+  virtual Result<ScatteredRay> scatter(const Ray& ray,
+                                       const HitRecord& hit) const = 0;
 };
 
 struct Lambertian : public Material {
   ColorF3 albedo;
   Lambertian(ColorF3 albedo) : albedo(albedo) {}
 
-  inline Result<ScatteredRay> scatter(const Ray& ray,
-                                      const HitRecord& hit) const override {
+  Result<ScatteredRay> scatter(const Ray& ray,
+                               const HitRecord& hit) const override {
     auto scatterDir = hit.normal + RandomInUnitSphere();
     if (scatterDir.pow() < 1e-3) scatterDir = hit.normal;
     Ray scattered = Ray{hit.point, scatterDir.normalize()};
@@ -38,12 +38,11 @@ struct Metal : public Material {
   Metal(ColorF3 albedo, mfloat fuzz)
       : albedo(albedo), fuzz(std::min(fuzz, mfloat(1))) {}
 
-  inline Result<ScatteredRay> scatter(const Ray& ray,
-                                      const HitRecord& hit) const override {
+  Result<ScatteredRay> scatter(const Ray& ray,
+                               const HitRecord& hit) const override {
     auto reflected = ReflectedVector(ray.direction, hit.normal);
     reflected += RandomInUnitSphere() * fuzz;
-    if (reflected.dot(hit.normal) <= 0)
-      return {}; // absorb the ray
+    if (reflected.dot(hit.normal) <= 0) return {};  // absorb the ray
     Ray scattered = Ray{hit.point, reflected.normalize()};
     return ScatteredRay{scattered, albedo};
   }
@@ -54,8 +53,8 @@ struct Dielectric : public Material {
   mfloat refractiveIndex;
   Dielectric(mfloat refractiveIndex) : refractiveIndex(refractiveIndex) {}
 
-  inline Result<ScatteredRay> scatter(const Ray& ray,
-                                      const HitRecord& hit) const override {
+  Result<ScatteredRay> scatter(const Ray& ray,
+                               const HitRecord& hit) const override {
     // relative refractive index
     auto rri = hit.frontFace ? (1 / refractiveIndex) : refractiveIndex;
     auto rayIn = ray.direction;
@@ -75,7 +74,7 @@ struct Dielectric : public Material {
   }
 
   // Use Schlick's approximation for reflectance
-  inline static mfloat reflectance(mfloat cos, mfloat relativeRefractiveIndex) {
+  static mfloat reflectance(mfloat cos, mfloat relativeRefractiveIndex) {
     auto r0 = (1 - relativeRefractiveIndex) / (1 + relativeRefractiveIndex);
     r0 = r0 * r0;
     return r0 + (1 - r0) * pow((1 - cos), 5);

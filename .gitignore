@@ -3,6 +3,7 @@
 build/
 vsxmake2022
 .vscode
+.idea
 
 # MacOS Cache
 .DS_Store

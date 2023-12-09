@@ -22,8 +22,7 @@ struct HitRecord {
 struct Hittable {
   // virtual ~Hittable() = default;
 
-  virtual inline Result<HitRecord> hit(const Ray &ray,
-                                       Interval rayTime) const = 0;
+  virtual Result<HitRecord> hit(const Ray &ray, Interval rayTime) const = 0;
 };
 
 struct HittableList : public Hittable {
@@ -32,14 +31,11 @@ struct HittableList : public Hittable {
   HittableList() {}
   HittableList(std::shared_ptr<Hittable> object) { add(object); }
 
-  inline void clear() { objects.clear(); }
+  void clear() { objects.clear(); }
 
-  inline void add(std::shared_ptr<Hittable> object) {
-    objects.push_back(object);
-  }
+  void add(std::shared_ptr<Hittable> object) { objects.push_back(object); }
 
-  inline Result<HitRecord> hit(const Ray &ray,
-                               Interval rayTime) const override {
+  Result<HitRecord> hit(const Ray &ray, Interval rayTime) const override {
     Result<HitRecord> record;
 
     for (const auto &object : objects) {

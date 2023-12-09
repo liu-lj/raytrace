@@ -17,8 +17,7 @@ struct Sphere : public Hittable {
   Sphere(mfloat radius, float3 center, std::shared_ptr<Material> material)
       : radius(radius), center(center), material(material) {}
 
-  inline Result<HitRecord> hit(const Ray &ray,
-                               Interval rayTime) const override {
+  Result<HitRecord> hit(const Ray &ray, Interval rayTime) const override {
     float3 orig = ray.origin;
     float3 dir = ray.direction;
     float3 dis = center - orig;

@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
 
   timeTest([&]() -> void {
     print("rendering...");
-    
+
     // render
     bool printLog = camera.samplesPerPixel > 10;
     auto image = camera.render(scene, printLog);

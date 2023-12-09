@@ -27,7 +27,7 @@ struct CameraTransform {
     updateVectors();
   }
 
-  inline void updateVectors() {
+  void updateVectors() {
     float3 look = origin - lookAt;
     focalLength = look.length();
     k = normalize(look);
@@ -100,7 +100,7 @@ struct Camera {
     viewportSize = float2(viewportHeight, viewportWidth);
   }
 
-  inline Image render(const HittableList &scene, bool printLog = true) {
+  Image render(const HittableList &scene, bool printLog = true) {
     Image image(height, width, 3);
 
     int lines_rendered = 0;
@@ -114,14 +114,6 @@ struct Camera {
         for (int s = 0; s < samplesPerPixel; s++) {
           auto samplePos = getRandomSamplePos(x, y);
           auto ray = rayToScreenPos(samplePos / screenSize);
-
-          // colorSum = abs(ColorF3(ray.origin / 100 * 10));
-          // colorSum = abs(ColorF3(ray.origin / 100));
-          // colorSum = saturate(ray.direction);
-          // colorSum = ray.direction;
-          // colorSum *= samplesPerPixel;
-          // break;
-
           colorSum += rayColor(ray, scene);
         }
         colorSum /= samplesPerPixel;
@@ -144,7 +136,7 @@ struct Camera {
     return image;
   }
 
-  inline Ray rayToScreenPos(const float2 &screenPos) {
+  Ray rayToScreenPos(const float2 &screenPos) {
     // screenPos: (0, 1)^2
     // screenPosCentered: (-0.5, 0.5)^2
     float2 screenPosCentered = screenPos - viewportCenter;
@@ -155,32 +147,28 @@ struct Camera {
                  camTrans.k * -1;              // depth
     if (ddisk.angle > 0) {
       worldPos = camTrans.origin + dir * ddisk.foucsDist;
-      // auto ray1 = ddisk.randomRayToWorldPos(worldPos);
-      // auto diff = camTrans.origin - ray1.origin;
-      // return {diff, diff};
       return ddisk.randomRayToWorldPos(worldPos);
     }
     // emit a ray from the origin
     return Ray{camTrans.origin, normalize(dir)};
   }
 
-  inline float2 getRandomSamplePos(int x, int y) {
+  float2 getRandomSamplePos(int x, int y) {
     // x in [0, height), y in [0, width)
     float2 screenPos(x, y);
-    // delat.x, delta.y in [0, 1)
+    // delta.x, delta.y in [0, 1)
     float2 delta(RandFloat(), RandFloat());
     return screenPos + delta;
   }
 
-  inline ColorF3 rayColor(const Ray &ray, const Hittable &scene,
-                          int depth = 0) const {
+  ColorF3 rayColor(const Ray &ray, const Hittable &scene, int depth = 0) const {
     if (depth >= maxDepth)  // exceed the max depth
       return ColorF3(0, 0, 0);
 
     // ray trace
     auto result = scene.hit(ray, Interval(1e-3, INF));
 
-    // hitted an object
+    // hit an object
     if (result.success) {
       auto hit = result.ret;
 
